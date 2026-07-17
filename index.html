@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<title>PKIG — Panel Pracownika</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --ink:#0f0f0f;--ink2:#2e2e2e;--ink3:#666;--ink4:#aaa;
+  --bg:#f4f2ed;--sf:#fff;--bd:#e4e1da;--bd2:#ccc9c0;
+  --ac:#c97c09;--alt:#fff7e6;
+  --go:#0e6e3d;--go-bg:#e5f5ec;--go-lt:#9ee4be;
+  --bl:#1a4fa0;--bl-bg:#e8eef8;--bl-lt:#b8cef0;
+  --pu:#5a2080;--pu-bg:#f0e8f8;
+  --rd:#b02020;--rd-bg:#fbe8e8;--rd-lt:#f0b8b8;
+  --or:#c96020;--or-bg:#fdf0e8;--or-lt:#e8c090;
+  --r:10px;--rl:16px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 4px 14px rgba(0,0,0,.07);
+  --sh-lg:0 6px 28px rgba(0,0,0,.13);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:#111}
+body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);font-size:14px;line-height:1.5;display:flex;align-items:center;justify-content:center}
+.phone{width:min(390px,100vw);height:min(844px,100vh);background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+@media(min-width:420px){.phone{border-radius:46px;box-shadow:0 32px 80px rgba(0,0,0,.6)}}
+.sbar{height:44px;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:12px 20px 0;flex-shrink:0}
+@media(min-width:420px){.sbar{border-radius:46px 46px 0 0}}
+.sbar-t{font-size:13px;font-weight:600;color:#fff;font-family:'DM Mono',monospace}
+.app-hdr{background:var(--ink);padding:5px 18px 12px;flex-shrink:0;position:relative;overflow:hidden}
+.app-hdr::after{content:'';position:absolute;top:-40px;right:-20px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,rgba(201,124,9,.22) 0%,transparent 70%);pointer-events:none}
+.ah-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.ah-g{font-size:10px;color:rgba(255,255,255,.3);letter-spacing:.04em}
+.ah-n{font-size:15px;font-weight:700;color:#fff}
+.ah-av{width:33px;height:33px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.15);cursor:pointer}
+.ah-pills{display:flex;gap:5px}
+.ah-pill{padding:3px 8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:100px;font-size:9px;font-weight:500;color:rgba(255,255,255,.45)}
+.ah-pill.ok{background:rgba(93,222,138,.14);border-color:rgba(93,222,138,.2);color:#5dde8a}
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 12px 6px}
+.scroll::-webkit-scrollbar{display:none}
+.bnav{background:rgba(244,242,237,.96);backdrop-filter:blur(14px);border-top:1px solid var(--bd);display:flex;padding:6px 0 env(safe-area-inset-bottom,8px);flex-shrink:0}
+@media(min-width:420px){.bnav{border-radius:0 0 46px 46px}}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 3px;cursor:pointer;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+.bn-icon{font-size:20px;opacity:.3;transition:all .15s}
+.bn-lbl{font-size:9px;font-weight:500;color:var(--ink3)}
+.bn.on .bn-icon{opacity:1;transform:scale(1.08)}
+.bn.on .bn-lbl{color:var(--ac);font-weight:700}
+.bn-w{position:relative;display:inline-block}
+.bn-badge{position:absolute;top:-3px;right:-5px;background:#ff5c5c;color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:100px}
+/* HERO */
+.hero{background:var(--ink);border-radius:var(--rl);padding:16px 15px 13px;margin-bottom:10px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 85% 15%,rgba(201,124,9,.2) 0%,transparent 55%);pointer-events:none}
+.hero-date{font-size:10px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-bottom:1px}
+.hero-clock{font-family:'DM Mono',monospace;font-size:clamp(32px,9vw,44px);font-weight:500;color:#fff;letter-spacing:-.03em;line-height:1;margin-bottom:3px}
+.hero-status{font-size:11px;color:rgba(255,255,255,.32);margin-bottom:12px}
+.hero-status.on{color:#5dde8a}
+.hero-proj{display:flex;align-items:center;gap:7px;padding:8px 10px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:9px;margin-bottom:10px;cursor:pointer}
+.hero-proj.sel{background:rgba(201,124,9,.2);border-color:rgba(201,124,9,.35)}
+.hp-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.hp-name{font-size:11px;font-weight:600;color:rgba(255,255,255,.7);flex:1}
+.hp-id{font-family:'DM Mono',monospace;font-size:9px;color:rgba(255,255,255,.35)}
+.hp-chg{font-size:10px;color:rgba(255,255,255,.35)}
+.stamps{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:11px}
+.stamp{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.08);border-radius:9px;padding:8px 10px}
+.stamp.ed{cursor:pointer}.stamp.ed:hover{background:rgba(255,255,255,.1)}
+.stamp.fi{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.15)}
+.stamp-lbl{font-size:8px;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:1px}
+.stamp-t{font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:rgba(255,255,255,.18)}
+.stamp.fi .stamp-t{color:#fff}
+.stamp-sub{font-size:9px;color:rgba(255,255,255,.28);margin-top:1px}
+.stamp-sub.run{color:#5dde8a}
+.hbtn{width:100%;padding:12px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s}
+.hbtn:active{transform:scale(.97)}
+.btn-start{background:#5dde8a;color:#042b16}
+.btn-stop{background:#ff5c5c;color:#fff}
+.btn-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.8;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:.8}50%{opacity:.2}}
+/* CARD */
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);box-shadow:var(--sh);margin-bottom:10px;overflow:hidden}
+.ch{padding:10px 13px 8px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:6px}
+.ch-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.ch-t{font-size:12px;font-weight:700;color:var(--ink)}
+.ch-s{font-size:10px;color:var(--ink3);margin-top:1px}
+.ch-r{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.cb{padding:11px 13px}
+.req{color:#d04;font-size:9px;font-weight:600;margin-left:3px}
+.field-ok{font-size:13px;color:var(--go);margin-left:auto;flex-shrink:0}
+/* DEPT + PROJECT PICKER */
+.dept-btns{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.dept-btn{padding:5px 11px;border-radius:100px;border:1.5px solid var(--bd);background:var(--sf);font-size:10px;font-weight:600;color:var(--ink3);cursor:pointer;transition:all .12s;white-space:nowrap}
+.dept-btn.on{font-weight:700}
+.proj-item{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--bd);cursor:pointer}
+.proj-item:last-child{border-bottom:none}
+.proj-item.sel{background:var(--alt);margin:0 -13px;padding:8px 13px}
+.pi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pi-id{font-family:'DM Mono',monospace;font-size:11px;font-weight:700;width:38px;flex-shrink:0}
+.pi-name{font-size:11px;font-weight:500;color:var(--ink);flex:1}
+.pi-chk{width:16px;height:16px;border-radius:4px;border:2px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:transparent;flex-shrink:0}
+.proj-item.sel .pi-chk{background:var(--ac);border-color:var(--ac);color:#fff}
+.proj-search{width:100%;padding:8px 11px;border:1.5px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);background:var(--sf);margin-bottom:8px}
+.proj-search:focus{outline:none;border-color:var(--ac)}
+.recent-lbl{font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px}
+.recent-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:100px;background:var(--bg);border:1.5px solid var(--bd);font-size:10px;font-weight:600;color:var(--ink2);cursor:pointer;margin:0 4px 4px 0;transition:all .12s}
+.recent-chip:hover{border-color:var(--ac);color:var(--ac)}
+/* ETAP */
+.etap-row{display:flex;gap:7px}
+.etap-btn{flex:1;padding:12px 7px;border-radius:11px;border:2px solid var(--bd);background:var(--sf);cursor:pointer;text-align:center;transition:all .15s}
+.etap-btn:active{transform:scale(.97)}
+.etap-btn.sel{background:var(--alt);border-color:var(--ac)}
+.etap-icon{font-size:22px;margin-bottom:4px}
+.etap-name{font-size:12px;font-weight:700;color:var(--ink2)}
+.etap-sub{font-size:9px;color:var(--ink4);margin-top:1px;line-height:1.3}
+/* CAR SELECT */
+.car-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.car-btn{padding:8px 10px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--sf);cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:7px}
+.car-btn:active{transform:scale(.97)}
+.car-btn.sel{background:var(--alt);border-color:var(--ac)}
+.car-icon{font-size:16px;flex-shrink:0}
+.car-name{font-size:11px;font-weight:600;color:var(--ink2);line-height:1.2}
+.car-plate{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);margin-top:1px}
+.car-chk{width:14px;height:14px;border-radius:3px;border:2px solid var(--bd);margin-left:auto;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;flex-shrink:0}
+.car-btn.sel .car-chk{background:var(--ac);border-color:var(--ac);color:#fff}
+/* TOGGLES */
+.tgl-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.tgl{border:1.5px solid var(--bd);border-radius:var(--r);padding:9px 9px;cursor:pointer;transition:all .12s;display:flex;align-items:center;gap:6px}
+.tgl:active{transform:scale(.97)}
+.tgl.on{background:var(--alt);border-color:var(--ac)}
+.tgl-icon{font-size:16px;flex-shrink:0}
+.tgl-name{font-size:10px;font-weight:600;color:var(--ink2);line-height:1.2}
+.tgl-chk{width:14px;height:14px;border-radius:3px;border:2px solid var(--bd);margin-left:auto;display:flex;align-items:center;justify-content:center;font-size:8px;color:transparent;flex-shrink:0}
+.tgl.on .tgl-chk{background:var(--ac);border-color:var(--ac);color:#fff}
+/* NOTE */
+.note-inp{width:100%;min-height:52px;padding:8px 10px;border:1.5px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--ink);resize:none;background:var(--sf)}
+.note-inp:focus{outline:none;border-color:var(--ac)}
+.note-inp::placeholder{color:var(--ink4)}
+.mic-row{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.mic-btn{width:42px;height:42px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mic-idle{background:var(--bg);box-shadow:var(--sh)}
+.mic-rec{background:#ff5c5c;animation:rpc 1.1s infinite}
+@keyframes rpc{0%{box-shadow:0 0 0 0 rgba(255,92,92,.5)}70%{box-shadow:0 0 0 12px rgba(255,92,92,0)}100%{box-shadow:0 0 0 0 rgba(255,92,92,0)}}
+/* MANUAL TIME */
+.mt-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:4px}
+.mt-lbl{font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.mt-inp{padding:9px 11px;border:1.5px solid var(--bd2);border-radius:8px;font-family:'DM Mono',monospace;font-size:18px;font-weight:500;color:var(--ink);text-align:center;background:var(--bg);width:100%}
+.mt-inp:focus{outline:none;border-color:var(--ac)}
+.mt-calc{margin-top:5px;padding:6px 10px;background:var(--alt);border:1px solid #f0cc80;border-radius:7px;font-size:11px;color:var(--ac);font-weight:600;text-align:center;font-family:'DM Mono',monospace}
+.mtabs{display:flex;background:var(--sf);border:1.5px solid var(--bd);border-radius:8px;overflow:hidden;margin-bottom:11px}
+.mtab{flex:1;padding:6px;font-size:11px;font-weight:500;color:var(--ink3);cursor:pointer;text-align:center;border:none;background:transparent;font-family:'DM Sans',sans-serif}
+.mtab.on{background:var(--ink);color:#fff;font-weight:700}
+/* SUBMIT */
+.btn-sub{width:100%;padding:13px;background:var(--ink);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:all .15s}
+.btn-sub:active{transform:scale(.98)}
+.btn-sub:disabled{background:var(--bd);color:var(--ink4);cursor:not-allowed;transform:none}
+.btn-ghost{display:block;text-align:center;margin-top:8px;font-size:11px;color:var(--ink3);cursor:pointer;text-decoration:underline}
+/* CONFIRM */
+.conf-hero{background:var(--go);border-radius:var(--rl) var(--rl) 0 0;padding:20px 15px;text-align:center}
+.conf-circle{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.18);font-size:22px;display:flex;align-items:center;justify-content:center;margin:0 auto 7px}
+.conf-title{font-size:16px;font-weight:700;color:#fff;margin-bottom:2px}
+.conf-sub{font-size:10px;color:rgba(255,255,255,.55)}
+.conf-body{background:var(--sf);border:1px solid var(--bd);border-top:none;border-radius:0 0 var(--rl) var(--rl);margin-bottom:10px}
+.cr{display:flex;align-items:flex-start;gap:9px;padding:8px 12px;border-bottom:1px solid var(--bd)}
+.cr:last-child{border-bottom:none}
+.cr-lbl{font-size:9px;font-weight:700;color:var(--ink4);text-transform:uppercase;letter-spacing:.07em;margin-bottom:1px}
+.cr-val{font-size:11px;font-weight:600;color:var(--ink)}
+/* MONTH TABLE */
+.month-ctrl{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.mn-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--bd);background:var(--sf);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.mn-lbl{font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--ink)}
+.sum-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:10px}
+.ss{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:8px 6px;text-align:center}
+.ss-val{font-family:'DM Mono',monospace;font-size:14px;font-weight:600;color:var(--ink);margin-bottom:1px}
+.ss-val.ac{color:var(--ac)}.ss-val.go{color:var(--go)}.ss-val.bl{color:var(--bl)}
+.ss-lbl{font-size:9px;color:var(--ink3)}
+/* Day table */
+.day-tbl{width:100%;border-collapse:collapse;background:var(--sf);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;box-shadow:var(--sh);margin-bottom:10px;table-layout:fixed}
+.day-tbl th{font-size:8px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;padding:6px 6px 5px;border-bottom:1.5px solid var(--bd);background:var(--bg);text-align:right;white-space:nowrap;overflow:hidden}
+.day-tbl th:first-child{text-align:left;width:44px}
+.day-tbl th:nth-child(2){text-align:left;width:auto}
+.day-tbl th:nth-child(3){width:58px}
+.day-tbl th:nth-child(4){width:30px}
+.day-tbl th:nth-child(5){width:30px}
+.day-tbl th:last-child{width:36px}
+.day-tbl td{padding:0;border-bottom:1px solid var(--bd);vertical-align:top}
+.day-tbl tr:last-child td{border-bottom:none}
+.dr{display:flex;align-items:center;padding:5px 6px;cursor:pointer;min-height:32px}
+.dr:hover{background:#faf9f5}
+.dr.wknd .dr-dn{color:var(--pu);font-weight:700}
+.dr.today-r .dr-dn{color:var(--ac);font-weight:700}
+.dr-dn{font-family:'DM Mono',monospace;font-size:12px;color:var(--ink);width:16px;flex-shrink:0}
+.dr-dw{font-size:8px;color:var(--ink4);width:20px;flex-shrink:0;padding-left:2px}
+.dr-proj{font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--ink2);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
+.dr-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);text-align:right;white-space:nowrap}
+.dr-h{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--ac);text-align:right;width:30px;flex-shrink:0}
+.dr-prz{font-family:'DM Mono',monospace;font-size:10px;font-weight:600;color:var(--go);text-align:right;width:30px;flex-shrink:0}
+.dr-flag{font-size:9px;width:36px;text-align:right;flex-shrink:0;white-space:nowrap}
+.dr-empty .dr-proj{color:var(--ink4);font-style:italic;font-family:'DM Sans',sans-serif;font-weight:400;font-size:10px}
+.entry-expand{display:none;background:var(--bg);border-top:1px solid var(--bd);padding:8px 10px}
+.entry-expand.open{display:block}
+.ee-row{display:flex;justify-content:space-between;font-size:10px;padding:2px 0}
+.ee-lbl{color:var(--ink3)}.ee-val{font-family:'DM Mono',monospace;font-weight:600;color:var(--ink2)}
+.tbl-foot{display:flex;align-items:center;padding:7px 6px;background:var(--ink);border-radius:0 0 var(--rl) var(--rl)}
+.tf-lbl{font-size:10px;font-weight:600;color:rgba(255,255,255,.45);flex:1}
+.tf-h{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#fff;width:30px;text-align:right;flex-shrink:0}
+.tf-prz{font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:#5dde8a;width:30px;text-align:right;flex-shrink:0}
+.tf-add{font-size:10px;font-weight:600;color:#fac775;width:36px;text-align:right;flex-shrink:0}
+/* LEAVE */
+.lt-btn{width:100%;padding:11px 13px;border-radius:var(--r);border:1.5px solid var(--bd);background:var(--sf);display:flex;align-items:center;gap:10px;cursor:pointer;margin-bottom:7px;transition:all .12s}
+.lt-btn:active{transform:scale(.98)}
+.lt-btn.sel{background:var(--alt);border-color:var(--ac)}
+.lt-icon{font-size:20px;flex-shrink:0}
+.lt-name{font-size:12px;font-weight:600;color:var(--ink)}
+.lt-sub{font-size:10px;color:var(--ink3);margin-top:1px}
+/* ALERTS */
+.alert{padding:8px 11px;border-radius:9px;font-size:11px;font-weight:500;line-height:1.5;display:flex;align-items:flex-start;gap:6px;margin-bottom:9px}
+.a-warn{background:#fff8ec;border:1px solid #f5d48a;color:#7a4a00}
+.a-info{background:var(--bl-bg);border:1px solid var(--bl-lt);color:#1a3f7a}
+.a-err{background:var(--rd-bg);border:1px solid var(--rd-lt);color:var(--rd)}
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:100px;font-size:9px;font-weight:600}
+.bg-go{background:var(--go-bg);color:var(--go);border:1px solid var(--go-lt)}
+.bg-am{background:var(--alt);color:var(--ac);border:1px solid #f0d090}
+.bg-bl{background:var(--bl-bg);color:var(--bl);border:1px solid var(--bl-lt)}
+.bg-rd{background:var(--rd-bg);color:var(--rd);border:1px solid var(--rd-lt)}
+.bg-gr{background:var(--bg);color:var(--ink3);border:1px solid var(--bd)}
+.bg-night{background:#1a1000;color:#fac775;border:1px solid rgba(250,199,117,.3)}
+/* STA */
+.sta{display:inline-block;padding:1px 6px;border-radius:100px;font-size:9px;font-weight:600}
+.sta-p{background:#fff8ec;color:#7a4a00;border:1px solid #f5d48a}
+.sta-a{background:var(--go-bg);color:var(--go);border:1px solid var(--go-lt)}
+.sta-r{background:var(--rd-bg);color:var(--rd);border:1px solid var(--rd-lt)}
+/* OVERLAY */
+.overlay{position:absolute;inset:0;z-index:200;background:rgba(0,0,0,.52);backdrop-filter:blur(3px);display:flex;align-items:flex-end;justify-content:center;padding:12px;border-radius:inherit}
+.sheet{background:var(--sf);border-radius:16px 16px 12px 12px;width:100%;padding:18px;max-height:88%;overflow-y:auto}
+.sheet::-webkit-scrollbar{display:none}
+.sh-title{font-size:14px;font-weight:700;color:var(--ink);margin-bottom:3px;text-align:center}
+.sh-sub{font-size:11px;color:var(--ink3);margin-bottom:13px;text-align:center}
+.sh-acts{display:flex;flex-direction:column;gap:6px}
+.sh-btn{padding:12px;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;text-align:center;border:none}
+.sh-btn:active{transform:scale(.97)}
+.sh-main{background:var(--ink);color:#fff}
+.sh-sec{background:var(--go);color:#fff}
+.sh-cancel{background:var(--bg);color:var(--ink3);font-weight:500;font-size:12px;border:1.5px solid var(--bd2)}
+.tei-inp{width:100%;padding:10px;border:1.5px solid var(--bd2);border-radius:8px;font-family:'DM Mono',monospace;font-size:19px;font-weight:500;color:var(--ink);text-align:center;background:var(--bg);margin-bottom:10px}
+.tei-inp:focus{outline:none;border-color:var(--ac)}
+.tei-acts{display:flex;gap:6px}
+.tei-cancel{flex:1;padding:9px;background:var(--bg);border:1.5px solid var(--bd2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;color:var(--ink3);cursor:pointer}
+.tei-save{flex:2;padding:9px;background:var(--ink);border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;color:#fff;cursor:pointer}
+/* SPIN */
+.spin-ov{position:absolute;inset:0;z-index:300;background:rgba(10,10,10,.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;border-radius:inherit}
+.spin-card{background:var(--sf);border-radius:13px;padding:20px 18px;text-align:center;max-width:200px;width:80%}
+.spinner{width:28px;height:28px;border-radius:50%;border:3px solid var(--bd);border-top-color:var(--ac);animation:spin .8s linear infinite;margin:0 auto 9px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:absolute;bottom:66px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;font-size:11px;font-weight:500;padding:8px 15px;border-radius:100px;opacity:0;transition:opacity .25s;z-index:400;white-space:nowrap;box-shadow:var(--sh-lg);pointer-events:none}
+.toast.show{opacity:1}
+.fade-in{animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+/* PROFILE */
+.prof-stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:10px;text-align:center;flex:1}
+.ps-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--ink);margin-bottom:1px}
+.ps-lbl{font-size:9px;color:var(--ink3)}
+</style>
+</head>
+<body>
+<div class="phone" id="phone">
+  <div class="sbar"><div class="sbar-t" id="sbar-t">9:41</div><div style="font-size:10px;color:rgba(255,255,255,.55)">5G ▌▌▌ 🔋</div></div>
+  <div class="app-hdr">
+    <div class="ah-top">
+      <div><div class="ah-g" id="ah-g">Dzień dobry,</div><div class="ah-n">Marta Kowalska</div></div>
+      <div class="ah-av">MK</div>
+    </div>
+    <div class="ah-pills"><div class="ah-pill ok">● maj 2026</div><div class="ah-pill">#1071</div></div>
+  </div>
+  <div class="scroll" id="content"></div>
+  <div class="bnav">
+    <button class="bn on" id="bn-wpis" onclick="goTab('wpis')"><div class="bn-icon">🎤</div><div class="bn-lbl">Nowy wpis</div></button>
+    <button class="bn" id="bn-miesiac" onclick="goTab('miesiac')"><div class="bn-icon">📅</div><div class="bn-lbl">Miesiąc</div></button>
+    <button class="bn" id="bn-urlopy" onclick="goTab('urlopy')"><div class="bn-w"><div class="bn-icon">🏖️</div></div><div class="bn-lbl">Urlopy i wolne</div></button>
+
+  </div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   API — połączenie z Google Apps Script
+══════════════════════════════════════ */
+const API_URL   = 'https://script.google.com/macros/s/AKfycbxFxhe1wMSlbRRW4lOtlk29EZ74EQ24gOMVd8wF5cF4Q6HVtkyX8TvNK7pX3e-ZByKKpQ/exec';
+const API_TOKEN = 'pkig2026secret';
+const USE_API   = true; // false = tryb demo (dane w pamięci)
+
+async function apiGet(action, params={}){
+  if(!USE_API) return null;
+  try{
+    const qs = new URLSearchParams({action, token:API_TOKEN, ...params}).toString();
+    const res = await fetch(API_URL + '?' + qs);
+    return await res.json();
+  }catch(e){ console.error('API GET error:', e); showToast('Błąd połączenia z serwerem'); return null; }
+}
+
+async function apiPost(action, data){
+  if(!USE_API) return null;
+  try{
+    const res = await fetch(API_URL, {
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify({action, token:API_TOKEN, data})
+    });
+    return await res.json();
+  }catch(e){ console.error('API POST error:', e); showToast('Błąd zapisu na serwerze'); return null; }
+}
+
+/* Identyfikacja zalogowanego pracownika (docelowo z OAuth) */
+let CURRENT_EMP_ID = 1071; // Marta Kowalska — placeholder do czasu OAuth
+
+/* Załaduj dane pracownika z serwera przy starcie */
+async function loadFromServer(){
+  if(!USE_API) return;
+  const wpisy = await apiGet('getWpisy', {empId: CURRENT_EMP_ID});
+  if(wpisy && Array.isArray(wpisy)){
+    HISTORY = wpisy.map(w=>({
+      id:w.id, proj:w.proj, date:w.date, start:w.start, end:w.end, hrs:w.hrs,
+      etap:w.etap, note:w.note, wyjazd:w.wyjazd, car:w.car, carOther:w.carOther||'',
+      zdalna:w.zdalna, ustalenia:w.ustalenia, status:w.status
+    }));
+  }
+  const urlopy = await apiGet('getUrlopy', {empId: CURRENT_EMP_ID});
+  if(urlopy && Array.isArray(urlopy)){
+    LEAVES = urlopy.map(u=>({
+      id:u.id, type:u.type, label:u.type, df:u.df, dt:u.dt, dni:u.dni, opis:u.opis, status:u.status
+    }));
+  }
+  const projekty = await apiGet('getProjekty');
+  if(projekty && Array.isArray(projekty) && projekty.length){
+    window.SERVER_PROJECTS = projekty;
+  }
+  render();
+}
+
+/* ══ DATA ══ */
+const SL_COLORS={pow_pom:'#c97c09',pow_cad:'#1a4fa0',foto:'#187a45',arch:'#5a2080',baty:'#b02020',g_mdcp:'#0e7a7a',g_bud:'#156030',g_prawna:'#8a5a2d',lk85:'#2d5a8a',adm:'#5a8a2d'};
+const SL_NAMES={pow_pom:'Pomiary pow.',pow_cad:'CAD',foto:'Naloty',arch:'Architektura',baty:'Batymetria',g_mdcp:'Geodezja m.',g_bud:'Budowy',g_prawna:'G. Prawna',lk85:'LK85',adm:'Adm'};
+
+const ALL_DEPTS=[
+  {id:'dept_pom',    name:'Pomiary pow.',   color:'#c97c09', sls:['pow_pom','pow_cad']},
+  {id:'dept_foto',   name:'Fotogrametria',  color:'#187a45', sls:['foto','arch','baty']},
+  {id:'dept_geo',    name:'Geodezja m.',    color:'#0e7a7a', sls:['g_mdcp','g_bud']},
+  {id:'dept_gprawna',name:'Geod. prawna',   color:'#8a5a2d', sls:['g_prawna']},
+  {id:'dept_lk85',   name:'LK85',           color:'#2d5a8a', sls:['lk85']},
+  {id:'dept_adm',    name:'Administracja',  color:'#5a8a2d', sls:['adm']},
+];
+
+const ALL_PROJECTS=[
+  {id:'P001',name:'Centrum log. Ursus',      sl:'pow_pom', dept:'dept_pom'},
+  {id:'P002',name:'Inwentaryzacja Kraków',   sl:'arch',    dept:'dept_foto'},
+  {id:'P005',name:'Obsługa budowy Wola',     sl:'g_bud',   dept:'dept_geo'},
+  {id:'P006',name:'Mapa Mokotów',            sl:'g_mdcp',  dept:'dept_geo'},
+  {id:'P007',name:'Batymetria Wisła',        sl:'baty',    dept:'dept_foto'},
+  {id:'P008',name:'LK85 etap IV',            sl:'lk85',    dept:'dept_lk85'},
+  {id:'P009',name:'Prace administracyjne',   sl:'adm',     dept:'dept_adm'},
+];
+
+const CARS=[
+  {id:'c01', name:'Biały Miś',     model:'Dacia Duster'},
+  {id:'c02', name:'Chytry Lis',    model:'Dacia Duster'},
+  {id:'c03', name:'Gazela',        model:'Dacia Jogger'},
+  {id:'c04', name:'Rudy Lis',      model:'Dacia Jogger'},
+  {id:'c05', name:'Goryl',         model:'Dacia Jogger'},
+  {id:'c06', name:'Golf 2',        model:'VW Golf'},
+  {id:'c07', name:'Szary Wilk',    model:'VW Golf'},
+  {id:'c08', name:'Ford Focus',    model:'Ford Focus'},
+  {id:'c09', name:'Antek',         model:'Peugeot Partner'},
+  {id:'c10', name:'Strzała',       model:'Peugeot Partner'},
+  {id:'c11', name:'Corsa',         model:'Opel Corsa'},
+  {id:'c12', name:'Swoje auto',    model:'prywatny'},
+  {id:'c13', name:'Bolt',          model:'Bolt (taxi)'},
+  {id:'c14', name:'Inne',          model:'wpisz poniżej'},
+];
+
+let HISTORY=[
+  {id:1,proj:'P001',date:'2026-05-02',start:'07:30',end:'15:30',hrs:8,etap:'teren',note:'Tyczenie fundamentów',wyjazd:true,car:'c1',zdalna:false,ustalenia:'',status:'approved'},
+  {id:2,proj:'P005',date:'2026-05-02',start:'07:30',end:'15:30',hrs:8,etap:'teren',note:'Wytyczenie fundamentów',wyjazd:false,car:null,zdalna:false,ustalenia:'',status:'approved'},
+  {id:3,proj:'P006',date:'2026-05-03',start:'08:00',end:'16:00',hrs:8,etap:'biuro',note:'Opracowanie danych',wyjazd:false,car:null,zdalna:true,ustalenia:'',status:'approved'},
+  {id:4,proj:'P001',date:'2026-04-28',start:'07:30',end:'15:30',hrs:8,etap:'teren',note:'Pomiar sieci',wyjazd:true,car:'c2',zdalna:false,ustalenia:'Nocna zmiana uzgodniona',status:'approved'},
+  {id:5,proj:'P005',date:'2026-04-25',start:'08:00',end:'17:00',hrs:9,etap:'teren',note:'Wytyczenie',wyjazd:false,car:null,zdalna:false,ustalenia:'',status:'pending'},
+];
+let LEAVES=[
+  {id:1,type:'urlop',label:'Urlop wypoczynkowy',df:'2026-04-28',dt:'2026-04-30',dni:3,status:'approved'},
+];
+let SESSION=[];
+let RECENT_PROJS=['P001','P005']; // last used project IDs
+let nextId=200;
+
+/* ══ STATE ══ */
+let TAB='wpis', overlay=null, overlayData={};
+let micOn=false, rec=null;
+let newLeave={type:null,df:'',dt:'',dni:0,opis:''};
+let viewMonth={y:2026,m:5};
+let showEmpty=true;
+let expandedDays=new Set();
+let S=fresh();
+
+function fresh(){
+  return{phase:'idle',mode:'timer',
+    startTime:null,endTime:null,manualStart:'',manualEnd:'',
+    proj:null,dept:null,
+    etap:null,note:'',transcript:'',
+    wyjazd:false,car:null,carOther:'',zdalna:false,ustalenia:'',
+    projSearch:'',tick:null};
+}
+
+/* ══ TIME HELPERS ══ */
+const today=new Date('2026-05-13T10:00:00');
+function hms(){return new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
+function fhm(d){return d?d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}):'--:--';}
+function elStr(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?h+'h '+String(m).padStart(2,'0')+'min':m+'min '+String(sc).padStart(2,'0')+'s';}
+function fmtD(s){try{return new Date(s).toLocaleDateString('pl-PL',{day:'numeric',month:'long'});}catch{return s;}}
+function monthLbl(y,m){return new Date(y,m-1,1).toLocaleDateString('pl-PL',{month:'long',year:'numeric'});}
+function greeting(){const h=new Date().getHours();return h<18?'Dzień dobry,':'Dobry wieczór,';}
+function toMins(t){if(!t)return null;const[h,m]=t.split(':').map(Number);return h*60+m;}
+function round15(date){const d=new Date(date);d.setMinutes(Math.round(d.getMinutes()/15)*15,0,0);return d;}
+function round15s(str){if(!str)return str;const[h,m]=str.split(':').map(Number);const tm=h*60+m,rm=Math.round(tm/15)*15;return String(Math.floor(rm/60)%24).padStart(2,'0')+':'+String(rm%60).padStart(2,'0');}
+function hoursB(a,b){if(!a||!b)return 0;let d=(b-a)/3600000;if(d<0)d+=24;return Math.round(d*100)/100;}
+function hoursS(s,e){if(!s||!e)return 0;let m=toMins(e)-toMins(s);if(m<0)m+=1440;return Math.round(m/60*100)/100;}
+function hstr(h){if(!h||h<=0)return'0h';const wh=Math.floor(h),wm=Math.round((h%1)*60);return wm>0?wh+'h '+wm+'min':wh+'h';}
+function isWeekend(ds){const d=new Date(ds);return d.getDay()===0||d.getDay()===6;}
+function calcEntry(e){
+  const h=e.hrs;const wm=isWeekend(e.date)?1.5:1;
+  let prz=0;
+  if(isWeekend(e.date)){prz=h*1.5;}
+  else if(e.wyjazd){const n=Math.min(h,8),ov=Math.max(h-8,0);prz=n*1.3+ov*1.5;}
+  else{const n=Math.min(h,8),ov=Math.max(h-8,0);prz=n+ov*1.5;}
+  const dieta=e.wyjazd?45:0;
+  return{przelicz:Math.round(prz*100)/100,dieta};
+}
+function canEdit(ds){return Math.floor((today-new Date(ds))/86400000)<=4;}
+
+function deptOfProj(pid){const p=ALL_PROJECTS.find(x=>x.id===pid);return p?ALL_DEPTS.find(d=>d.id===p.dept):null;}
+function slColorOfProj(pid){const p=ALL_PROJECTS.find(x=>x.id===pid);return p?SL_COLORS[p.sl]||'#aaa':'#aaa';}
+
+/* ══ TABS ══ */
+function goTab(t){TAB=t;overlay=null;stopMic();['wpis','miesiac','urlopy'].forEach(id=>document.getElementById('bn-'+id)?.classList.toggle('on',id===t));render();}
+
+/* ══ VALIDATION ══ */
+function canSub(){
+  const hasT=S.mode==='timer'?(!!(S.startTime&&S.endTime)):(!!S.manualStart&&!!S.manualEnd);
+  // Car required when teren (always show car, required if wyjazd)
+  const carOk=S.etap!=='teren'||!S.wyjazd||( S.car&&(S.car!=='c14'||S.carOther.trim().length>0) );
+  return hasT&&S.proj&&S.etap&&carOk;
+}
+
+/* ══ RENDER ══ */
+
+function rTryb(){
+  if(!S.etap) return '';
+  var out = '';
+
+  if(S.etap === 'teren'){
+    var carCards = '';
+    CARS.forEach(function(c){
+      var isSel = S.car === c.id;
+      var icon = c.id==='c12'?'🚗': c.id==='c13'?'🚕': c.id==='c14'?'✏️':'🚙';
+      carCards += '<div class="car-btn' + (isSel?' sel':'') + '" onclick="pickCar(\'' + c.id + '\')">'
+        + '<div class="car-icon">' + icon + '</div>'
+        + '<div style="flex:1;min-width:0">'
+        + '<div class="car-name">' + c.name + '</div>'
+        + '<div class="car-plate">' + c.model + '</div>'
+        + '</div>'
+        + '<div class="car-chk">' + (isSel?'✓':'') + '</div>'
+        + '</div>';
+    });
+
+    var selCar = S.car ? CARS.find(function(c){return c.id===S.car;}) : null;
+    var carLabel = selCar ? (selCar.name + (S.car==='c14'&&S.carOther?' — '+S.carOther:'')) : '';
+    var otherInput = S.car==='c14'
+      ? '<div style="margin-top:8px"><input type="text" id="car-other" class="proj-search"'
+        + ' style="margin-bottom:0" placeholder="Wpisz nazwę pojazdu..."'
+        + ' value="' + (S.carOther||'') + '" oninput="S.carOther=this.value;refreshSub()"/></div>'
+      : '';
+    var carConfirm = carLabel
+      ? '<div style="margin-top:6px;font-size:10px;color:var(--go);font-weight:600">✓ ' + carLabel + '</div>'
+      : '';
+
+    out += '<div class="card">'
+      + '<div class="ch">'
+      + '<div class="ch-icon" style="background:#fff8ec">🚗</div>'
+      + '<div><div class="ch-t">Pojazd</div>'
+      + '<div class="ch-s">Opcjonalnie — jakim autem?</div></div>'
+      + (S.car ? '<div class="field-ok">✅</div>' : '')
+      + '</div>'
+      + '<div class="cb"><div class="car-grid">' + carCards + '</div>'
+      + otherInput + carConfirm
+      + '</div></div>';
+
+    var wCls = S.wyjazd ? 'tgl on' : 'tgl';
+    out += '<div class="card">'
+      + '<div class="ch"><div class="ch-icon" style="background:#fff8ec">🧳</div>'
+      + '<div><div class="ch-t">Wyjazd służbowy?</div>'
+      + '<div class="ch-s">Nie zaznaczone = praca na miejscu</div></div></div>'
+      + '<div class="cb">'
+      + '<div class="' + wCls + '" style="width:100%" onclick="S.wyjazd=!S.wyjazd;render()">'
+      + '<div class="tgl-icon">🧳</div>'
+      + '<div><div class="tgl-name">Tak — wyjazd służbowy</div></div>'
+      + '<div class="tgl-chk">' + (S.wyjazd ? '✓' : '') + '</div>'
+      + '</div></div></div>';
+
+  } else if(S.etap === 'biuro'){
+    var zCls = S.zdalna ? 'tgl on' : 'tgl';
+    out += '<div class="card">'
+      + '<div class="ch"><div class="ch-icon" style="background:#f0fff5">🏠</div>'
+      + '<div><div class="ch-t">Praca zdalna?</div>'
+      + '<div class="ch-s">Nie zaznaczone = praca w biurze</div></div></div>'
+      + '<div class="cb">'
+      + '<div class="' + zCls + '" style="width:100%" onclick="S.zdalna=!S.zdalna;render()">'
+      + '<div class="tgl-icon">🏠</div>'
+      + '<div><div class="tgl-name">Tak — praca zdalna (home office)</div></div>'
+      + '<div class="tgl-chk">' + (S.zdalna?'✓':'') + '</div>'
+      + '</div></div></div>';
+  }
+
+  return out;
+}
+
+
+function render(){
+  const c=document.getElementById('content');
+  removeOv();
+  if(TAB==='wpis'){
+    if(S.phase==='idle')c.innerHTML=rIdle();
+    else if(S.phase==='pick_proj')c.innerHTML=rPickProj();
+    else if(S.phase==='working')c.innerHTML=rWorking();
+    else if(S.phase==='filling')c.innerHTML=rFilling();
+    else if(S.phase==='confirmed')c.innerHTML=rConfirmed();
+    bindInputs();
+  }else if(TAB==='miesiac')c.innerHTML=rMiesiac();
+  else if(TAB==='urlopy')c.innerHTML=rUrlopy();
+
+  if(overlay)renderOv();
+}
+
+function bindInputs(){
+  const nf=document.getElementById('nf');if(nf){nf.value=S.note;nf.oninput=e=>{S.note=e.target.value;refreshSub()};}
+  const uf=document.getElementById('uf');if(uf){uf.value=S.ustalenia;uf.oninput=e=>S.ustalenia=e.target.value;}
+  const ps=document.getElementById('proj-search');if(ps){ps.value=S.projSearch;ps.oninput=e=>{S.projSearch=e.target.value;renderProjList()};}
+  const ms=document.getElementById('ms'),me=document.getElementById('me');
+  if(ms){ms.value=S.manualStart;ms.oninput=e=>{S.manualStart=round15s(e.target.value)||e.target.value;refreshCalc()};}
+  if(me){me.value=S.manualEnd;me.oninput=e=>{S.manualEnd=round15s(e.target.value)||e.target.value;refreshCalc()};}
+}
+function refreshSub(){const b=document.getElementById('sbtn');if(b)b.disabled=!canSub();}
+function refreshCalc(){const el=document.getElementById('mcalc');if(!el)return;if(S.manualStart&&S.manualEnd){el.textContent='Łącznie: '+hstr(hoursS(S.manualStart,S.manualEnd));el.style.display='block';}else el.style.display='none';refreshSub();}
+
+/* ══ IDLE ══ */
+function rIdle(){
+  const todayStr=today.toISOString().split('T')[0];
+  const todayH=HISTORY.filter(h=>h.date===todayStr).reduce((s,h)=>s+h.hrs,0);
+  const recent=RECENT_PROJS.map(id=>ALL_PROJECTS.find(p=>p.id===id)).filter(Boolean);
+  return`<div class="fade-in">
+    <div class="hero">
+      <div class="hero-date">${today.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'})}</div>
+      <div class="hero-clock" id="lc">${hms()}</div>
+      <div class="hero-status">${todayH>0?'dziś: '+hstr(todayH):'Gotowy do pracy'}</div>
+      ${S.proj?`<div class="hero-proj sel">
+        <div class="hp-dot" style="background:${slColorOfProj(S.proj)}"></div>
+        <div class="hp-name">${ALL_PROJECTS.find(p=>p.id===S.proj)?.name||S.proj}</div>
+        <div class="hp-id">${S.proj}</div>
+        <div class="hp-chg" onclick="S.proj=null;S.dept=null;render()">✕</div>
+      </div>`:`<div class="hero-proj" onclick="S.phase='pick_proj';render()">
+        <div style="font-size:14px">📁</div>
+        <div class="hp-name" style="color:rgba(255,255,255,.4)">Wybierz projekt przed rozpoczęciem</div>
+        <div class="hp-chg">›</div>
+      </div>`}
+      <button class="hbtn btn-start" onclick="startWork()" ${!S.proj?'disabled style="opacity:.4;cursor:not-allowed"':''}><span style="font-size:15px">▶</span> Rozpoczynam pracę</button>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--ink3);margin:6px 0 7px">lub zapomniano nacisnąć start?</div>
+    <button class="hbtn" style="background:var(--sf);color:var(--ink2);border:1.5px solid var(--bd2);padding:10px;font-size:12px" onclick="goManual()">✏️ Wpisz godziny ręcznie</button>
+    ${recent.length>0?`<div style="margin-top:12px">
+      <div class="recent-lbl">Ostatnio używane projekty</div>
+      <div>${recent.map(p=>`<span class="recent-chip" onclick="S.proj='${p.id}';S.dept='${p.dept}';render()">
+        <div style="width:7px;height:7px;border-radius:50%;background:${SL_COLORS[p.sl]}"></div>
+        <span style="font-family:'DM Mono',monospace;font-weight:700;font-size:10px">${p.id}</span> ${p.name}
+      </span>`).join('')}</div>
+    </div>`:''}
+    <div class="card" style="margin-top:11px">
+      <div class="ch"><div class="ch-icon" style="background:#fff8ec">📋</div><div><div class="ch-t">Ostatnie wpisy</div></div>
+        <div style="font-size:10px;color:var(--ac);cursor:pointer" onclick="goTab('miesiac')">Miesiąc →</div>
+      </div>
+      <div class="cb" style="padding:5px 13px">
+        ${HISTORY.slice(0,3).map(h=>{const p=ALL_PROJECTS.find(x=>x.id===h.proj);return`
+        <div style="display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--bd)">
+          <div style="width:6px;height:6px;border-radius:50%;background:${h.status==='approved'?'var(--go)':h.status==='rejected'?'var(--rd)':'var(--ac)'};flex-shrink:0"></div>
+          <div style="flex:1;min-width:0">
+            <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:var(--ink)">${h.proj}</div>
+            <div style="font-size:9px;color:var(--ink3)">${fmtD(h.date)} · ${h.etap==='teren'?'🏗️':'💻'} ${h.start}–${h.end}</div>
+          </div>
+          <div style="font-family:'DM Mono',monospace;font-size:11px;font-weight:500;color:var(--ac)">${h.hrs}h</div>
+          <span class="sta ${h.status==='approved'?'sta-a':h.status==='rejected'?'sta-r':'sta-p'}">${h.status==='approved'?'zatw.':h.status==='rejected'?'odrzuc.':'oczek.'}</span>
+        </div>`;}).join('')}
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  </div>`;
+}
+
+/* ══ PICK PROJECT ══ */
+function rPickProj(){
+  const filteredByDept=S.dept?ALL_PROJECTS.filter(p=>p.dept===S.dept):ALL_PROJECTS;
+  const q=S.projSearch.trim().toLowerCase();
+  const filtered=q?filteredByDept.filter(p=>p.id.toLowerCase().includes(q)||p.name.toLowerCase().includes(q)):filteredByDept;
+  return`<div class="fade-in">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:13px">
+      <button class="hbtn" style="background:var(--sf);border:1.5px solid var(--bd2);color:var(--ink2);padding:8px 13px;width:auto;font-size:12px" onclick="S.phase='idle';render()">← Wróć</button>
+      <div style="font-size:14px;font-weight:700;color:var(--ink)">Wybierz projekt</div>
+    </div>
+    <!-- Filtr działu -->
+    <div class="dept-btns">
+      <button class="dept-btn ${!S.dept?'on':''}" style="${!S.dept?'border-color:var(--ac);background:var(--alt);color:var(--ac)':''}" onclick="S.dept=null;S.projSearch='';render()">Wszystkie</button>
+      ${ALL_DEPTS.map(d=>`<button class="dept-btn ${S.dept===d.id?'on':''}"
+        style="${S.dept===d.id?`border-color:${d.color};background:${d.color}18;color:${d.color}`:''}"
+        onclick="S.dept='${d.id}';S.projSearch='';render()">${d.name}</button>`).join('')}
+    </div>
+    <!-- Szukaj po numerze -->
+    <input type="text" id="proj-search" class="proj-search" placeholder="🔍 Wpisz nr lub fragment nazwy (np. P001)" autocomplete="off"/>
+    <!-- Lista projektów -->
+    <div id="proj-list-wrap">
+      ${filtered.length===0?`<div style="font-size:12px;color:var(--ink4);padding:16px;text-align:center;font-style:italic">Brak projektów${S.dept?' w tym dziale':''}</div>`:''}
+      ${filtered.map(p=>{
+        const d=ALL_DEPTS.find(x=>x.id===p.dept);
+        const sc=SL_COLORS[p.sl]||d?.color||'#aaa';
+        const isSel=S.proj===p.id;
+        return`<div class="proj-item ${isSel?'sel':''}" onclick="pickProj('${p.id}')">
+          <div class="pi-dot" style="background:${sc}"></div>
+          <div class="pi-id" style="color:${sc}">${p.id}</div>
+          <div class="pi-name">${p.name}</div>
+          <div style="font-size:9px;color:${d?.color||'#aaa'};margin-right:4px;white-space:nowrap">${d?.name||''}</div>
+          <div class="pi-chk">${isSel?'✓':''}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${S.proj?`<div style="position:sticky;bottom:0;padding:10px 0 4px;background:var(--bg)">
+      <button class="btn-sub" onclick="S.phase='idle';render()">✓ Projekt ${S.proj} wybrany — powróć</button>
+    </div>`:''}
+    <div style="height:8px"></div>
+  </div>`;
+}
+
+function renderProjList(){
+  const wrap=document.getElementById('proj-list-wrap');if(!wrap)return;
+  const filteredByDept=S.dept?ALL_PROJECTS.filter(p=>p.dept===S.dept):ALL_PROJECTS;
+  const q=S.projSearch.trim().toLowerCase();
+  const filtered=q?filteredByDept.filter(p=>p.id.toLowerCase().includes(q)||p.name.toLowerCase().includes(q)):filteredByDept;
+  if(!filtered.length){wrap.innerHTML=`<div style="font-size:12px;color:var(--ink4);padding:16px;text-align:center;font-style:italic">Brak wyników</div>`;return;}
+  wrap.innerHTML=filtered.map(p=>{
+    const d=ALL_DEPTS.find(x=>x.id===p.dept);const sc=SL_COLORS[p.sl]||'#aaa';const isSel=S.proj===p.id;
+    return`<div class="proj-item ${isSel?'sel':''}" onclick="pickProj('${p.id}')">
+      <div class="pi-dot" style="background:${sc}"></div>
+      <div class="pi-id" style="color:${sc}">${p.id}</div>
+      <div class="pi-name">${p.name}</div>
+      <div style="font-size:9px;color:${d?.color||'#aaa'};margin-right:4px;white-space:nowrap">${d?.name||''}</div>
+      <div class="pi-chk">${isSel?'✓':''}</div>
+    </div>`;
+  }).join('');
+}
+
+function pickProj(id){
+  S.proj=id;
+  const p=ALL_PROJECTS.find(x=>x.id===id);
+  if(p)S.dept=p.dept;
+  // Update recent
+  RECENT_PROJS=RECENT_PROJS.filter(x=>x!==id);
+  RECENT_PROJS.unshift(id);
+  if(RECENT_PROJS.length>3)RECENT_PROJS.pop();
+  S.phase='idle';render();
+}
+
+/* ══ WORKING ══ */
+function rWorking(){
+  const sec=S.startTime?Math.floor((Date.now()-S.startTime)/1000):0;
+  const p=ALL_PROJECTS.find(x=>x.id===S.proj);
+  return`<div class="fade-in">
+    <div class="hero">
+      <div class="hero-date">${today.toLocaleDateString('pl-PL',{weekday:'long',day:'numeric',month:'long'})}</div>
+      <div class="hero-clock" id="lc">${hms()}</div>
+      <div class="hero-status on">● Praca w toku</div>
+      ${p?`<div class="hero-proj sel" onclick="S.phase='pick_proj';render()">
+        <div class="hp-dot" style="background:${SL_COLORS[p.sl]}"></div>
+        <div class="hp-name">${p.name}</div><div class="hp-id">${p.id}</div>
+        <div class="hp-chg">✎</div>
+      </div>`:''}
+      <div class="stamps">
+        <div class="stamp fi ed" onclick="openEdit('start')"><div class="stamp-lbl">Rozpoczęcie ✎</div><div class="stamp-t">${fhm(S.startTime)}</div><div class="stamp-sub run" id="el">${elStr(sec)}</div></div>
+        <div class="stamp"><div class="stamp-lbl">Zakończenie</div><div class="stamp-t">--:--</div></div>
+      </div>
+      <button class="hbtn btn-stop" onclick="askStop()"><span class="btn-dot"></span> Zatrzymaj</button>
+    </div>
+    <div class="alert a-info" style="margin-top:9px"><span>💡</span><span>Czas zaokrąglany do 15 min. Dotknij godziny startu aby poprawić.</span></div>
+  </div>`;
+}
+
+/* ══ FILLING ══ */
+function rFilling(){
+  const sStr=S.mode==='timer'?fhm(S.startTime):S.manualStart;
+  const eStr=S.mode==='timer'?fhm(S.endTime):S.manualEnd;
+  const hrs=S.mode==='timer'&&S.startTime&&S.endTime?hoursB(S.startTime,S.endTime):hoursS(sStr,eStr);
+  const night=sStr&&(parseInt(sStr)>=20||parseInt(eStr)<=6);
+  const p=ALL_PROJECTS.find(x=>x.id===S.proj);
+  const needsCar=S.etap==='teren'&&S.wyjazd;
+  const ok=canSub();
+
+  return`<div class="fade-in">
+    ${S.mode==='manual'||!S.startTime?`<div class="mtabs"><button class="mtab ${S.mode==='timer'?'on':''}" onclick="setMode('timer')">⏱ Timer</button><button class="mtab ${S.mode==='manual'?'on':''}" onclick="setMode('manual')">✏️ Ręcznie</button></div>`:''}
+
+    <!-- PROJEKT (readonly summary) -->
+    ${p?`<div style="display:flex;align-items:center;gap:8px;padding:9px 13px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);margin-bottom:10px;cursor:pointer;box-shadow:var(--sh)" onclick="S.phase='pick_proj';render()">
+      <div style="width:8px;height:8px;border-radius:50%;background:${SL_COLORS[p.sl]};flex-shrink:0"></div>
+      <div style="font-family:'DM Mono',monospace;font-size:11px;font-weight:700;color:${SL_COLORS[p.sl]}">${p.id}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--ink);flex:1">${p.name}</div>
+      <div style="font-size:10px;color:var(--ink3)">Zmień ›</div>
+    </div>`:''} 
+
+    <!-- CZAS -->
+    <div class="card">
+      <div class="ch"><div class="ch-icon" style="background:#f0fff4">⏱️</div>
+        <div><div class="ch-t">Czas pracy<span class="req"> *</span></div><div class="ch-s">Zaokrąglony do 15 min</div></div>
+        ${sStr&&eStr?'<div class="field-ok">✅</div>':''}
+      </div>
+      <div class="cb">
+        ${S.mode==='timer'&&S.startTime?`<div style="display:flex;align-items:center;gap:9px">
+          <div style="flex:1"><div style="font-family:'DM Mono',monospace;font-size:20px;font-weight:500;color:var(--ink)">${sStr} – ${eStr}</div>
+          <div style="font-size:11px;color:var(--ac);font-weight:600;margin-top:1px">${hrs>0?hstr(hrs):''}</div></div>
+          <div style="display:flex;gap:4px">
+            <div style="padding:6px 9px;background:var(--go-bg);border-radius:7px;border:1px solid var(--go-lt);cursor:pointer;text-align:center" onclick="openEdit('start')">
+              <div style="font-size:8px;color:var(--go);font-weight:700;text-transform:uppercase">Start ✎</div>
+              <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--go)">${sStr}</div>
+            </div>
+            <div style="padding:6px 9px;background:var(--rd-bg);border-radius:7px;border:1px solid var(--rd-lt);cursor:pointer;text-align:center" onclick="openEdit('end')">
+              <div style="font-size:8px;color:var(--rd);font-weight:700;text-transform:uppercase">Koniec ✎</div>
+              <div style="font-family:'DM Mono',monospace;font-size:13px;font-weight:600;color:var(--rd)">${eStr}</div>
+            </div>
+          </div>
+        </div>`:
+        `<div class="mt-grid"><div><div class="mt-lbl">Od</div><input type="time" id="ms" class="mt-inp" step="900"/></div>
+        <div><div class="mt-lbl">Do</div><input type="time" id="me" class="mt-inp" step="900"/></div></div>
+        <div id="mcalc" class="mt-calc" style="display:none"></div>`}
+        ${night?'<div class="alert a-warn" style="margin-top:7px;margin-bottom:0"><span>🌙</span><span>Praca nocna (20:00–6:00) — ×1.5, uwzględnione automatycznie.</span></div>':''}
+      </div>
+    </div>
+
+    <!-- ETAP -->
+    <div class="card">
+      <div class="ch"><div class="ch-icon" style="background:#f0f7ff">📍</div>
+        <div><div class="ch-t">Gdzie pracowałeś/łaś?<span class="req"> *</span></div></div>
+        ${S.etap?'<div class="field-ok">✅</div>':''}
+      </div>
+      <div class="cb">
+        <div class="etap-row">
+          <div class="etap-btn ${S.etap==='teren'?'sel':''}" onclick="setEtap('teren')">
+            <div class="etap-icon">🏗️</div><div class="etap-name">Teren</div>
+            <div class="etap-sub">pomiar · tyczenie<br>budowa · plener</div>
+          </div>
+          <div class="etap-btn ${S.etap==='biuro'?'sel':''}" onclick="setEtap('biuro')">
+            <div class="etap-icon">💻</div><div class="etap-name">Biuro</div>
+            <div class="etap-sub">opracowanie · mapa<br>dokumentacja · CAD</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    ${rTryb()}
+
+    <!-- OPIS -->    <!-- OPIS -->
+    <div class="card">
+      <div class="ch"><div class="ch-icon" style="background:#fdf0ff">🎤</div>
+        <div><div class="ch-t">Co robiłeś/łaś?</div><div class="ch-s">Powiedz lub wpisz</div></div>
+        ${S.note.trim().length>2?'<div class="field-ok">✅</div>':''}
+      </div>
+      <div class="cb">
+        ${S.transcript&&!micOn?`<div style="background:var(--bl-bg);border:1px solid var(--bl-lt);border-radius:7px;padding:7px 9px;margin-bottom:7px"><div style="font-size:8px;font-weight:700;color:var(--bl);text-transform:uppercase;margin-bottom:2px">Rozpoznano:</div><div style="font-size:11px;color:var(--bl);font-style:italic">„${S.transcript}"</div></div>`:''}
+        <div class="mic-row">
+          <button class="mic-btn ${micOn?'mic-rec':'mic-idle'}" onclick="togMic()">${micOn?'⏹':'🎤'}</button>
+          <div style="font-size:11px;color:var(--ink3);flex:1">${micOn?'<strong style="color:#ff5c5c">Nagrywam...</strong> — ⏹ aby zakończyć':'<strong>Mikrofon</strong> lub wpisz poniżej'}</div>
+        </div>
+        <textarea class="note-inp" id="nf" placeholder="Opis prac (opcjonalnie)..."></textarea>
+      </div>
+    </div>
+
+    <!-- USTALENIA SPECJALNE -->
+    <div class="card">
+      <div class="ch"><div class="ch-icon" style="background:var(--or-bg)">📌</div>
+        <div><div class="ch-t">Ustalenia specjalne</div><div class="ch-s">Opcjonalnie — widoczne dla kierownika</div></div>
+      </div>
+      <div class="cb"><textarea class="note-inp" id="uf" placeholder="np. nocna zmiana uzgodniona, inna stawka..." style="min-height:44px"></textarea></div>
+    </div>
+
+    ${S.etap==='teren'&&S.wyjazd&&!S.car?`<div class="alert a-warn"><span>⚠️</span><span>Zaznaczono wyjazd służbowy — wybierz pojazd z listy powyżej</span></div>`:''}
+    <button id="sbtn" class="btn-sub" ${ok?'':'disabled'} onclick="submitEntry()">Wyślij do zatwierdzenia →</button>
+    <div class="btn-ghost" onclick="resetAll()">Zacznij od nowa</div>
+    <div style="height:10px"></div>
+  </div>`;
+}
+
+/* ══ CONFIRMED ══ */
+function rConfirmed(){
+  const last=SESSION[SESSION.length-1];
+  const calc=last?calcEntry(last):{przelicz:0,dieta:0};
+  const car=last?.car?CARS.find(c=>c.id===last.car):null;
+  const carLabel=car?(car.name+(last.car==='c14'&&last.carOther?' — '+last.carOther:'')):'';
+  return`<div class="fade-in">
+    <div class="conf-hero"><div class="conf-circle">✅</div><div class="conf-title">Wysłano!</div><div class="conf-sub">Czeka na zatwierdzenie przez kierownika</div></div>
+    <div class="conf-body">
+      <div class="cr"><div style="font-size:13px">⏱️</div><div><div class="cr-lbl">Czas pracy</div><div class="cr-val" style="font-family:'DM Mono',monospace">${last?.start||'—'} – ${last?.end||'—'} · ${hstr(last?.hrs||0)}</div></div></div>
+      <div class="cr"><div style="font-size:13px">📁</div><div><div class="cr-lbl">Projekt</div><div class="cr-val">${last?.proj} · ${ALL_PROJECTS.find(p=>p.id===last?.proj)?.name||'—'}</div></div></div>
+      <div class="cr"><div style="font-size:13px">🧮</div><div><div class="cr-lbl">Godziny przeliczeniowe</div><div class="cr-val" style="color:var(--go)">${hstr(calc.przelicz)}</div></div></div>
+      ${calc.dieta>0?`<div class="cr"><div style="font-size:13px">💶</div><div><div class="cr-lbl">Dieta dzienna</div><div class="cr-val" style="color:var(--bl)">${calc.dieta} zł</div></div></div>`:''}
+      ${carLabel?`<div class="cr"><div style="font-size:13px">🚗</div><div><div class="cr-lbl">Pojazd</div><div class="cr-val">${carLabel}</div></div></div>`:''}
+      ${last?.ustalenia?`<div class="cr"><div style="font-size:13px">📌</div><div><div class="cr-lbl">Ustalenia specjalne</div><div class="cr-val" style="color:var(--or)">${last.ustalenia}</div></div></div>`:''}
+    </div>
+    <button class="btn-sub" onclick="nextProject()">+ Kolejny projekt</button>
+    <button class="btn-sub" style="background:var(--go);margin-top:6px" onclick="endDay()">✓ Kończę dzień</button>
+    <div style="height:10px"></div>
+  </div>`;
+}
+
+/* ══ MIESIAC ══ */
+function rMiesiac(){
+  const {y,m}=viewMonth;
+  const daysInM=new Date(y,m,0).getDate();
+  const monthStr=`${y}-${String(m).padStart(2,'0')}`;
+  const monthEntries=HISTORY.filter(h=>h.date.startsWith(monthStr)&&h.status!=='rejected');
+  const totH=monthEntries.reduce((s,h)=>s+h.hrs,0);
+  const totPrz=monthEntries.reduce((s,h)=>s+calcEntry(h).przelicz,0);
+  const totDiet=monthEntries.filter(h=>h.wyjazd).length*45;
+  const dayNames=['ndz','pon','wt','śr','czw','pt','sob'];
+
+  const days=[];
+  for(let d=1;d<=daysInM;d++){
+    const ds=`${y}-${String(m).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const entries=HISTORY.filter(h=>h.date===ds&&h.status!=='rejected');
+    days.push({d,ds,entries,isW:new Date(ds).getDay()===0||new Date(ds).getDay()===6,isT:ds===today.toISOString().split('T')[0],dw:new Date(ds).getDay()});
+  }
+  const vis=days;
+
+  return`<div class="fade-in">
+    <div class="month-ctrl">
+      <button class="mn-btn" onclick="chMonth(-1)">‹</button>
+      <div class="mn-lbl">${monthLbl(y,m)}</div>
+      <button class="mn-btn" onclick="chMonth(1)">›</button>
+    </div>
+    <div class="sum-strip">
+      <div class="ss"><div class="ss-val ac">${hstr(totH)}</div><div class="ss-lbl">Przepracowane</div></div>
+      <div class="ss"><div class="ss-val go">${hstr(totPrz)}</div><div class="ss-lbl">Przeliczeniowe</div></div>
+      <div class="ss"><div class="ss-val bl">${totDiet>0?totDiet+' zł':'—'}</div><div class="ss-lbl">Diety</div></div>
+    </div>
+    <div class="day-tbl">
+      <thead><tr>
+        <th style="text-align:left;width:44px">Dzień</th>
+        <th style="text-align:left">Projekt</th>
+        <th style="width:60px;text-align:right">Od–do</th>
+        <th style="width:30px;text-align:right">H</th>
+        <th style="width:30px;text-align:right">Prz.</th>
+        <th style="width:36px;text-align:right">Dod.</th>
+      </tr></thead>
+      <tbody>
+        ${vis.map(day=>{
+          const{d,ds,entries,isW,isT,dw}=day;
+          const hasSpecial=entries.some(e=>e.ustalenia);
+          const dayH=entries.reduce((s,e)=>s+e.hrs,0);
+          const dayPrz=entries.reduce((s,e)=>s+calcEntry(e).przelicz,0);
+          const dayDiet=entries.filter(e=>e.wyjazd).length*45;
+          const isExp=expandedDays.has(ds);
+
+          if(entries.length===0){
+            return`<tr class="${isW?'wknd':''} ${isT?'today-r':''}">
+              <td colspan="6"><div class="dr dr-empty ${isW?'wknd':''} ${isT?'today-r':''}">
+                <div class="dr-dn">${d}</div><div class="dr-dw">${dayNames[dw]}</div>
+                <div class="dr-proj" style="color:var(--ink4);font-style:italic;font-family:'DM Sans',sans-serif">brak</div>
+                <div class="dr-h" style="color:var(--ink4)">—</div>
+                <div class="dr-prz" style="color:var(--ink4)">—</div>
+                <div class="dr-flag"></div>
+              </div></td></tr>`;
+          }
+
+          const primary=entries[0];
+          const multi=entries.length>1;
+          return`<tr>
+            <td colspan="6">
+              <div class="dr ${isW?'wknd':''} ${isT?'today-r':''} ${hasSpecial?'has-special':''}" onclick="toggleDay('${ds}')">
+                <div class="dr-dn">${d}</div><div class="dr-dw">${dayNames[dw]}</div>
+                <div class="dr-proj">
+                  ${multi?`${entries.length}×`:`${primary.proj}`}
+                  ${hasSpecial?'<span style="color:var(--or);font-size:10px"> 📌</span>':''}
+                </div>
+                <div class="dr-time">${multi?'':primary.start+'–'+primary.end.slice(0,5)}</div>
+                <div class="dr-h">${hstr(dayH)}</div>
+                <div class="dr-prz">${hstr(dayPrz)}</div>
+                <div class="dr-flag">
+                  ${entries.some(e=>e.wyjazd)?'🧳':''}${entries.some(e=>e.zdalna)?'🏠':''}
+                  ${isW?'<span class="badge bg-pu" style="font-size:8px;padding:1px 4px">wknd</span>':''}
+                  <span style="color:var(--ink4);font-size:11px;margin-left:2px">${isExp?'▴':'▾'}</span>
+                </div>
+              </div>
+              ${isExp?`<div class="entry-expand open">
+                ${hasSpecial?`<div style="background:var(--or-bg);border:1px solid var(--or-lt);border-radius:7px;padding:6px 9px;margin-bottom:6px;font-size:10px;color:var(--or)">📌 ${entries.find(e=>e.ustalenia)?.ustalenia}</div>`:''}
+                ${entries.map(e=>{const ec=calcEntry(e);const car=e.car?CARS.find(c=>c.id===e.car):null;return`
+                  <div style="padding:7px 0;border-bottom:1px solid var(--bd)">
+                    <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+                      <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:${slColorOfProj(e.proj)}">${e.proj}</div>
+                      <div style="font-size:10px;color:var(--ink2)">${e.note}</div>
+                      <div style="margin-left:auto"><span class="sta ${e.status==='approved'?'sta-a':'sta-p'}">${e.status==='approved'?'zatw.':'oczek.'}</span></div>
+                    </div>
+                    <div style="display:flex;gap:8px;font-size:10px;flex-wrap:wrap">
+                      <span style="font-family:'DM Mono',monospace;color:var(--ink3)">${e.start}–${e.end}</span>
+                      <span style="color:var(--ac);font-weight:600">${hstr(e.hrs)} przeprac.</span>
+                      <span style="color:var(--go);font-weight:600">→ ${hstr(ec.przelicz)} przelicz.</span>
+                      ${ec.dieta>0?`<span style="color:var(--bl)">dieta: ${ec.dieta} zł</span>`:''}
+                      ${e.car?(()=>{const c=CARS.find(x=>x.id===e.car);return c?`<span style="color:var(--ink3)">🚗 ${c.name}${e.car==='c14'&&e.carOther?' — '+e.carOther:''}</span>`:''})():''}
+                      ${e.wyjazd?'<span class="badge bg-bl" style="font-size:8px">wyjazd</span>':''}
+                      ${e.zdalna?'<span class="badge bg-go" style="font-size:8px">zdalna</span>':''}
+                    </div>
+                    ${canEdit(e.date)?`<button onclick="openEditEntry(${e.id})" style="margin-top:5px;padding:3px 9px;border:1.5px solid var(--bd);border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;background:var(--sf);color:var(--ink2)">✎ Edytuj</button>`:''}
+                  </div>`;}).join('')}
+              </div>`:''}
+            </td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+      <tfoot><tr><td colspan="6">
+        <div class="tbl-foot">
+          <div style="width:44px;flex-shrink:0"></div>
+          <div class="tf-lbl">Razem ${monthLbl(y,m)}</div>
+          <div style="width:60px;flex-shrink:0"></div>
+          <div class="tf-h">${hstr(totH)}</div>
+          <div class="tf-prz">${hstr(Math.round(totPrz*10)/10)}</div>
+          <div class="tf-add">${totDiet>0?totDiet+'zł':''}</div>
+        </div>
+      </td></tr></tfoot>
+    </div>
+    <div style="font-size:9px;color:var(--ink4);text-align:center;padding:2px 0 4px">H = przepracowane · Prz. = przeliczeniowe · Dod. = diety i inne</div>
+    <div style="height:8px"></div>
+  </div>`;
+}
+
+/* ══ URLOPY ══ */
+function rUrlopy(){
+  const LEAVE_TYPES=[
+    {id:'urlop',icon:'🏖️',name:'Urlop wypoczynkowy',sub:''},
+    {id:'l4',icon:'🏥',name:'Zwolnienie (L4)',sub:''},
+    {id:'opieka',icon:'🧒',name:'Opieka nad dzieckiem',sub:'art. 188 KP'},
+    {id:'okolicz',icon:'🎁',name:'Okolicznościowy',sub:'ślub, pogrzeb...'},
+    {id:'inne',icon:'📋',name:'Inne',sub:'wpisz opis poniżej'},
+  ];
+  const used=LEAVES.filter(l=>l.type==='urlop'&&l.status==='approved').reduce((s,l)=>s+l.dni,0);
+  const typeMap={urlop:'Urlop',l4:'L4',opieka:'Opieka',okolicz:'Okolicz.',inne:'Inne'};
+  return`<div class="fade-in">
+    <div class="card" style="background:var(--bl-bg);border-color:var(--bl-lt)">
+      <div class="cb" style="padding:12px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+          <div style="font-size:11px;font-weight:700;color:var(--bl)">Urlop wypoczynkowy 2026</div>
+          <span class="badge bg-bl">${used} / 26 dni</span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.5);border-radius:4px;overflow:hidden;margin-bottom:3px">
+          <div style="height:100%;width:${Math.round(used/26*100)}%;background:var(--bl);border-radius:4px"></div>
+        </div>
+        <div style="font-size:10px;color:var(--bl)">Pozostało: <strong>${26-used} dni</strong></div>
+      </div>
+    </div>
+
+    <!-- Typ nieobecności -->
+    <div class="card">
+      <div class="ch"><div class="ch-icon" style="background:#fff8ec">📝</div><div><div class="ch-t">Złóż wniosek o nieobecność</div></div></div>
+      <div class="cb">
+        ${LEAVE_TYPES.map(lt=>`<div class="lt-btn ${newLeave.type===lt.id?'sel':''}" onclick="newLeave.type='${lt.id}';render()">
+          <div class="lt-icon">${lt.icon}</div>
+          <div style="flex:1"><div class="lt-name">${lt.name}</div>${lt.sub?`<div class="lt-sub">${lt.sub}</div>`:''}</div>
+          ${newLeave.type===lt.id?'<div style="color:var(--ac);font-size:16px">✓</div>':''}
+        </div>`).join('')}
+      </div>
+    </div>
+
+    ${newLeave.type?`<div class="card">
+      <div class="ch"><div class="ch-t">Szczegóły wniosku</div></div>
+      <div class="cb">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:${newLeave.type==='inne'?'9':'0'}px">
+          <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Data od</div>
+            <input type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--bd2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg)" oninput="newLeave.df=this.value;calcLD()" value="${newLeave.df}"/></div>
+          <div><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Data do</div>
+            <input type="date" style="width:100%;padding:8px 10px;border:1.5px solid var(--bd2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--bg)" oninput="newLeave.dt=this.value;calcLD()" value="${newLeave.dt}"/></div>
+        </div>
+        ${newLeave.dni>0?`<div class="mt-calc" style="margin-bottom:9px">${newLeave.dni} ${newLeave.dni===1?'dzień':'dni'}</div>`:''}
+        ${newLeave.type==='inne'?`<div style="margin-top:2px"><div style="font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Opis / przyczyna</div>
+          <textarea class="note-inp" style="min-height:50px" placeholder="Opisz powód nieobecności..." oninput="newLeave.opis=this.value">${newLeave.opis||''}</textarea></div>`:''}
+        <button class="btn-sub" style="margin-top:10px" onclick="submitLeave()">Złóż wniosek →</button>
+      </div>
+    </div>`:''}
+
+    ${LEAVES.length>0?`<div class="card">
+      <div class="ch"><div class="ch-t">Złożone wnioski</div></div>
+      <div class="cb" style="padding:5px 13px">
+        ${LEAVES.map(l=>`<div style="display:flex;align-items:center;gap:7px;padding:8px 0;border-bottom:1px solid var(--bd)">
+          <div style="flex:1"><div style="font-size:11px;font-weight:600">${{urlop:'🏖️ Urlop',l4:'🏥 L4',opieka:'🧒 Opieka',okolicz:'🎁 Okolicz.',inne:'📋 Inne'}[l.type]||l.type}</div>
+          <div style="font-size:9px;color:var(--ink3);font-family:'DM Mono',monospace">${l.df} – ${l.dt} · <strong>${l.dni} dni</strong></div></div>
+          <span class="sta ${l.status==='approved'?'sta-a':'sta-p'}">${l.status==='approved'?'Zatwierdzono':'Oczekuje'}</span>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+    <div style="height:8px"></div>
+  </div>`;
+}
+
+/* ══ PROFIL ══ */
+function rProfil(){
+  const apH=HISTORY.filter(h=>h.date.startsWith('2026-05')&&h.status!=='rejected').reduce((s,h)=>s+h.hrs,0);
+  const apPrz=HISTORY.filter(h=>h.date.startsWith('2026-05')&&h.status!=='rejected').reduce((s,h)=>s+calcEntry(h).przelicz,0);
+  return`<div class="fade-in">
+    <div style="background:var(--ink);border-radius:var(--rl);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:11px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(201,124,9,.22) 0%,transparent 70%);pointer-events:none"></div>
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2)">MK</div>
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Marta Kowalska</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Geodezja miejska · PKIG · etat</div>
+        <div style="display:flex;gap:5px;margin-top:4px">
+          <span style="font-family:'DM Mono',monospace;font-size:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 6px;color:rgba(255,255,255,.5)">#1071</span>
+          <span style="font-size:10px;color:rgba(255,255,255,.35)">34.52 zł/h</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+      <div class="prof-stat"><div class="ps-val" style="color:var(--ac)">${hstr(apH)}</div><div class="ps-lbl">Maj — przeprac.</div></div>
+      <div class="prof-stat"><div class="ps-val" style="color:var(--go)">${hstr(apPrz)}</div><div class="ps-lbl">Maj — przelicz.</div></div>
+      <div class="prof-stat"><div class="ps-val" style="color:var(--bl)">${26-3}</div><div class="ps-lbl">Dni urlopu zostało</div></div>
+      <div class="prof-stat"><div class="ps-val">${HISTORY.filter(h=>h.status==='pending').length}</div><div class="ps-lbl">Oczekuje zatw.</div></div>
+    </div>
+    <div class="card">
+      <div class="ch"><div class="ch-t">Moje projekty</div><div class="ch-s">Przypisane przez kierownika</div></div>
+      <div class="cb" style="padding:5px 13px">
+        ${[...new Set(HISTORY.map(h=>h.proj))].map(pid=>{const p=ALL_PROJECTS.find(x=>x.id===pid);if(!p)return'';
+        return`<div style="display:flex;align-items:center;gap:7px;padding:7px 0;border-bottom:1px solid var(--bd)">
+          <div style="width:7px;height:7px;border-radius:50%;background:${SL_COLORS[p.sl]};flex-shrink:0"></div>
+          <div style="font-family:'DM Mono',monospace;font-size:10px;font-weight:700;color:${SL_COLORS[p.sl]}">${p.id}</div>
+          <div style="font-size:11px;font-weight:500;color:var(--ink);flex:1">${p.name}</div>
+        </div>`;}).join('')}
+      </div>
+    </div>
+    <div style="height:8px"></div>
+  </div>`;
+}
+
+/* ══ OVERLAYS ══ */
+function removeOv(){document.getElementById('ov')?.remove();}
+function renderOv(){
+  const div=document.createElement('div');div.id='ov';div.className='overlay';
+  if(overlay==='stop-choice'){
+    div.innerHTML=`<div class="sheet"><div class="sh-title">Zatrzymujesz pracę</div><div class="sh-sub">Co chcesz zrobić?</div>
+      <div class="sh-acts">
+        <button class="sh-btn sh-sec" onclick="stopNext()">➡ Przechodzę do kolejnego projektu</button>
+        <button class="sh-btn sh-main" onclick="stopEnd()">✓ Kończę dzień pracy</button>
+        <button class="sh-btn sh-cancel" onclick="closeOv()">Wróć — kontynuuję</button>
+      </div></div>`;
+    div.onclick=e=>{if(e.target===div)closeOv();};
+  }else if(overlay==='edit-stamp'){
+    const w=overlayData.which;
+    const cur=w==='start'?fhm(S.startTime).replace('--:--',''):fhm(S.endTime).replace('--:--','');
+    div.innerHTML=`<div class="sheet"><div class="sh-title">Popraw godzinę ${w==='start'?'rozpoczęcia':'zakończenia'}</div>
+      <div style="font-size:10px;color:var(--ink3);margin-bottom:10px;text-align:center">Zaokrąglona do 15 min</div>
+      <input type="time" id="tei" class="tei-inp" step="900" value="${cur}"/>
+      <div class="tei-acts"><button class="tei-cancel" onclick="closeOv()">Anuluj</button><button class="tei-save" onclick="saveStamp('${w}')">Zapisz</button></div>
+    </div>`;
+    div.onclick=e=>{if(e.target===div)closeOv();};
+    document.getElementById('phone').appendChild(div);
+    setTimeout(()=>document.getElementById('tei')?.focus(),80);return;
+  }
+  document.getElementById('phone').appendChild(div);
+}
+function closeOv(){overlay=null;overlayData={};removeOv();}
+
+/* ══ ACTIONS ══ */
+function startWork(){
+  if(!S.proj){showToast('Wybierz projekt przed rozpoczęciem!');return;}
+  S.startTime=round15(new Date());S.phase='working';render();
+  S.tick=setInterval(()=>{const c=document.getElementById('lc');if(c)c.textContent=hms();const e=document.getElementById('el');if(e&&S.startTime)e.textContent=elStr(Math.floor((Date.now()-S.startTime)/1000));},1000);
+}
+function askStop(){overlay='stop-choice';renderOv();}
+function stopNext(){S.endTime=round15(new Date());clearInterval(S.tick);S.phase='filling';closeOv();render();}
+function stopEnd(){S.endTime=round15(new Date());clearInterval(S.tick);S.phase='filling';closeOv();render();}
+function goManual(){S.mode='manual';S.phase='filling';if(!S.proj){S.phase='pick_proj';}render();}
+function setMode(m){S.mode=m;render();}
+function setEtap(e){S.etap=(S.etap===e?null:e);render();refreshSub();}
+function pickCar(id){S.car=id;if(id!=='c14')S.carOther='';render();refreshSub();}
+function openEdit(w){overlay='edit-stamp';overlayData={which:w};renderOv();}
+function saveStamp(w){
+  const v=document.getElementById('tei')?.value;if(!v)return;
+  const[h,mn]=v.split(':').map(Number);const tm=h*60+mn,rm=Math.round(tm/15)*15;
+  const d=new Date();d.setHours(Math.floor(rm/60)%24,rm%60,0,0);
+  if(w==='start')S.startTime=d;else S.endTime=d;
+  closeOv();render();
+}
+async function submitEntry(){
+  let sD=S.startTime,eD=S.endTime;
+  if(S.mode==='manual'){
+    const rs=round15s(S.manualStart),re=round15s(S.manualEnd);
+    if(!rs||!re){showToast('Podaj godziny');return;}
+    sD=new Date();const[sh,sm]=rs.split(':').map(Number);sD.setHours(sh,sm,0,0);
+    eD=new Date();const[eh,em]=re.split(':').map(Number);eD.setHours(eh,em,0,0);
+  }
+  const startStr=fhm(sD),endStr=fhm(eD),hrs=hoursB(sD,eD);
+  const ov=document.createElement('div');ov.className='spin-ov';
+  ov.innerHTML='<div class="spin-card"><div class="spinner"></div><div style="font-size:12px;font-weight:600;color:var(--ink)">Zapisuję...</div></div>';
+  document.getElementById('phone').appendChild(ov);
+  await new Promise(r=>setTimeout(r,900));ov.remove();
+  const entry={id:nextId++,proj:S.proj,date:today.toISOString().split('T')[0],start:startStr,end:endStr,hrs,etap:S.etap,note:S.note,wyjazd:S.wyjazd,car:S.car,carOther:S.carOther,zdalna:S.zdalna,ustalenia:S.ustalenia,status:'pending'};
+  HISTORY.unshift(entry);SESSION.push({...entry});
+  // Zapisz na serwerze
+  if(USE_API){
+    apiPost('saveWpis', {empId:CURRENT_EMP_ID, empKod:'#'+CURRENT_EMP_ID, proj:entry.proj, date:entry.date,
+      start:entry.start, end:entry.end, hrs:entry.hrs, etap:entry.etap, note:entry.note,
+      wyjazd:entry.wyjazd, car:entry.car, carOther:entry.carOther, zdalna:entry.zdalna,
+      ustalenia:entry.ustalenia, status:'pending'}).then(r=>{ if(r&&r.id)entry.id=r.id; });
+  }
+  if(!RECENT_PROJS.includes(S.proj)){RECENT_PROJS.unshift(S.proj);if(RECENT_PROJS.length>3)RECENT_PROJS.pop();}
+  S.phase='confirmed';render();document.getElementById('content').scrollTo(0,0);
+}
+function nextProject(){
+  const prevEnd=SESSION[SESSION.length-1]?.end;
+  clearInterval(S.tick);
+  const ns=fresh();
+  if(prevEnd){const[h,m2]=prevEnd.split(':').map(Number);const d=new Date();d.setHours(h,m2,0,0);ns.startTime=d;ns.phase='pick_proj';}
+  Object.assign(S,ns);render();
+  if(S.startTime){S.tick=setInterval(()=>{const c=document.getElementById('lc');if(c)c.textContent=hms();},1000);}
+}
+function endDay(){SESSION=[];clearInterval(S.tick);S=fresh();render();showToast('Dobry dzień! Wpisy czekają na zatwierdzenie.');}
+function resetAll(){clearInterval(S.tick);SESSION=[];S=fresh();render();}
+
+function chMonth(d){viewMonth.m+=d;if(viewMonth.m>12){viewMonth.m=1;viewMonth.y++;}if(viewMonth.m<1){viewMonth.m=12;viewMonth.y--;}expandedDays.clear();render();}
+function toggleDay(ds){if(expandedDays.has(ds))expandedDays.delete(ds);else expandedDays.add(ds);render();}
+function openEditEntry(id){showToast('Edycja wpisu — otwórz w konsoli kierownika lub poczekaj na 4-dniowy limit');}
+
+function togMic(){micOn?stopMic():startMic();}
+function startMic(){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){showToast('Mikrofon: użyj Chrome lub Safari');return;}micOn=true;render();rec=new SR();rec.lang='pl-PL';rec.interimResults=false;rec.onresult=e=>{S.transcript=e.results[0][0].transcript;if(!S.note)S.note=S.transcript;micOn=false;render();setTimeout(()=>{const nf=document.getElementById('nf');if(nf){nf.value=S.note;nf.focus();}},80);refreshSub();};rec.onerror=()=>{micOn=false;showToast('Błąd mikrofonu');render();};rec.onend=()=>{if(micOn){micOn=false;render();}};rec.start();}
+function stopMic(){micOn=false;try{rec?.stop();}catch(e){}render();}
+
+function calcLD(){if(newLeave.df&&newLeave.dt){const d=(new Date(newLeave.dt)-new Date(newLeave.df))/86400000;newLeave.dni=d>=0?Math.round(d)+1:0;}render();}
+function submitLeave(){
+  if(!newLeave.type){showToast('Wybierz typ nieobecności');return;}
+  if(!newLeave.df||!newLeave.dt){showToast('Podaj daty');return;}
+  if(newLeave.type==='inne'&&!newLeave.opis.trim()){showToast('Opisz powód nieobecności');return;}
+  const leaveEntry={id:nextId++,type:newLeave.type,label:newLeave.type,df:newLeave.df,dt:newLeave.dt,dni:newLeave.dni,opis:newLeave.opis,status:'pending'};
+  LEAVES.unshift(leaveEntry);
+  if(USE_API){
+    apiPost('saveUrlop', {empId:CURRENT_EMP_ID, empKod:'#'+CURRENT_EMP_ID, type:leaveEntry.type,
+      df:leaveEntry.df, dt:leaveEntry.dt, dni:leaveEntry.dni, opis:leaveEntry.opis, status:'pending'});
+  }
+  newLeave={type:null,df:'',dt:'',dni:0,opis:''};
+  showToast('Wniosek złożony — czeka na kierownika');render();
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
+document.getElementById('ah-g').textContent=greeting();
+setInterval(()=>document.getElementById('sbar-t').textContent=new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}),30000);
+setInterval(()=>{if(S.phase==='idle'||S.phase==='working'){const c=document.getElementById('lc');if(c)c.textContent=hms();}},1000);
+render();
+if(USE_API) loadFromServer();
+</script>
+</body>
+</html>
