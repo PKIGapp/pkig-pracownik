@@ -260,6 +260,19 @@ body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);font-size:14px;
 .prof-stat{background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);padding:10px;text-align:center;flex:1}
 .ps-val{font-family:'DM Mono',monospace;font-size:17px;font-weight:500;color:var(--ink);margin-bottom:1px}
 .ps-lbl{font-size:9px;color:var(--ink3)}
+
+/* FIREBASE AUTH */
+.auth-screen{position:fixed;inset:0;z-index:9999;background:#111;display:flex;align-items:center;justify-content:center;padding:20px;font-family:'DM Sans',system-ui,sans-serif}
+.auth-box{width:min(390px,100%);background:#fff;border-radius:18px;padding:24px;box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.auth-logo{font-size:22px;font-weight:800;margin-bottom:4px}.auth-logo span{color:#c97c09}
+.auth-sub{font-size:12px;color:#666;margin-bottom:18px}
+.auth-input{width:100%;padding:11px 12px;border:1.5px solid #ccc9c0;border-radius:9px;font:14px 'DM Sans',sans-serif;margin-bottom:9px}
+.auth-input:focus{outline:none;border-color:#c97c09}
+.auth-primary,.auth-google{width:100%;padding:11px;border:none;border-radius:9px;font:700 13px 'DM Sans',sans-serif;cursor:pointer}
+.auth-primary{background:#111;color:#fff}.auth-google{margin-top:8px;background:#fff;border:1.5px solid #ccc9c0;color:#222}
+.auth-error{min-height:18px;margin-top:9px;color:#b02020;font-size:11px;line-height:1.4}
+.auth-wait{text-align:center;font-size:13px;color:#555;padding:10px}
+
 </style>
 </head>
 <body>
@@ -282,62 +295,115 @@ body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);font-size:14px;
   <div class="toast" id="toast"></div>
 </div>
 
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script>
 /* ══════════════════════════════════════
-   API — połączenie z Google Apps Script
+   FIREBASE — logowanie i baza Firestore
 ══════════════════════════════════════ */
-const API_URL   = 'https://script.google.com/macros/s/AKfycbxFxhe1wMSlbRRW4lOtlk29EZ74EQ24gOMVd8wF5cF4Q6HVtkyX8TvNK7pX3e-ZByKKpQ/exec';
-const API_TOKEN = 'pkig2026secret';
-const USE_API   = true; // false = tryb demo (dane w pamięci)
+const firebaseConfig = {
+  apiKey: "AIzaSyDVjl5wA5LCeGFGCdilbS_hrJ70bIz-iyk",
+  authDomain: "pkig-czas-pracy-app.firebaseapp.com",
+  projectId: "pkig-czas-pracy-app",
+  storageBucket: "pkig-czas-pracy-app.firebasestorage.app",
+  messagingSenderId: "879452165422",
+  appId: "1:879452165422:web:fe1d317bc82f9517b396bf"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
 
-async function apiGet(action, params={}){
-  if(!USE_API) return null;
-  try{
-    const qs = new URLSearchParams({action, token:API_TOKEN, ...params}).toString();
-    const res = await fetch(API_URL + '?' + qs);
-    return await res.json();
-  }catch(e){ console.error('API GET error:', e); showToast('Błąd połączenia z serwerem'); return null; }
+let CURRENT_USER = null;
+let CURRENT_PROFILE = null;
+let CURRENT_EMP_ID = 0;
+let CURRENT_EMP_KOD = '';
+
+function authMessage_(message=''){
+  let screen=document.getElementById('auth-screen');
+  if(!screen){
+    screen=document.createElement('div');
+    screen.id='auth-screen';
+    screen.className='auth-screen';
+    document.body.appendChild(screen);
+  }
+  screen.innerHTML=`<div class="auth-box">
+    <div class="auth-logo">PK<span>IG</span> · Czas pracy</div>
+    <div class="auth-sub">Zaloguj się kontem pracownika</div>
+    <input id="auth-email" class="auth-input" type="email" autocomplete="username" placeholder="Adres e-mail" value="test.pracownik@pkig.com.pl">
+    <input id="auth-password" class="auth-input" type="password" autocomplete="current-password" placeholder="Hasło">
+    <button class="auth-primary" onclick="loginEmail()">Zaloguj się</button>
+    <button class="auth-google" onclick="loginGoogle()">Zaloguj kontem Google</button>
+    <div class="auth-error" id="auth-error">${message||''}</div>
+  </div>`;
 }
-
-async function apiPost(action, data){
-  if(!USE_API) return null;
-  try{
-    const res = await fetch(API_URL, {
-      method:'POST',
-      headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body: JSON.stringify({action, token:API_TOKEN, data})
-    });
-    return await res.json();
-  }catch(e){ console.error('API POST error:', e); showToast('Błąd zapisu na serwerze'); return null; }
+function authWait_(message='Sprawdzam konto...'){
+  let screen=document.getElementById('auth-screen');
+  if(!screen){screen=document.createElement('div');screen.id='auth-screen';screen.className='auth-screen';document.body.appendChild(screen);}
+  screen.innerHTML=`<div class="auth-box"><div class="auth-logo">PK<span>IG</span> · Czas pracy</div><div class="auth-wait">${message}</div></div>`;
 }
+function hideAuth_(){document.getElementById('auth-screen')?.remove();}
+function authErrorText_(e){
+  const code=e?.code||'';
+  if(code.includes('invalid-credential')||code.includes('wrong-password')||code.includes('user-not-found')) return 'Nieprawidłowy login lub hasło.';
+  if(code.includes('too-many-requests')) return 'Za dużo prób. Spróbuj ponownie za chwilę.';
+  if(code.includes('popup-closed')) return 'Okno logowania zostało zamknięte.';
+  return e?.message||'Nie udało się zalogować.';
+}
+async function loginEmail(){
+  const email=document.getElementById('auth-email')?.value.trim();
+  const password=document.getElementById('auth-password')?.value||'';
+  const err=document.getElementById('auth-error');
+  if(!email||!password){if(err)err.textContent='Wpisz adres e-mail i hasło.';return;}
+  try{if(err)err.textContent='Logowanie...';await auth.signInWithEmailAndPassword(email,password);}
+  catch(e){if(err)err.textContent=authErrorText_(e);}
+}
+async function loginGoogle(){
+  const err=document.getElementById('auth-error');
+  try{if(err)err.textContent='Otwieram logowanie Google...';await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());}
+  catch(e){if(err)err.textContent=authErrorText_(e);}
+}
+async function logoutFirebase(){await auth.signOut();}
 
-/* Identyfikacja zalogowanego pracownika (docelowo z OAuth) */
-let CURRENT_EMP_ID = 64; // Sebastian Przybyła — użytkownik testowy
-const CURRENT_EMP_KOD = '#1064';
-
-/* Załaduj dane pracownika z serwera przy starcie */
 async function loadFromServer(){
-  if(!USE_API) return;
-  const wpisy = await apiGet('getWpisy', {empId: CURRENT_EMP_ID});
-  if(wpisy && Array.isArray(wpisy)){
-    HISTORY = wpisy.map(w=>({
-      id:w.id, proj:w.proj, date:w.date, start:w.start, end:w.end, hrs:w.hrs,
-      etap:w.etap, note:w.note, wyjazd:w.wyjazd, car:w.car, carOther:w.carOther||'',
-      zdalna:w.zdalna, ustalenia:w.ustalenia, status:w.status
-    }));
-  }
-  const urlopy = await apiGet('getUrlopy', {empId: CURRENT_EMP_ID});
-  if(urlopy && Array.isArray(urlopy)){
-    LEAVES = urlopy.map(u=>({
-      id:u.id, type:u.type, label:u.type, df:u.df, dt:u.dt, dni:u.dni, opis:u.opis, status:u.status
-    }));
-  }
-  const projekty = await apiGet('getProjekty');
-  if(projekty && Array.isArray(projekty) && projekty.length){
-    window.SERVER_PROJECTS = projekty;
-  }
+  const [entriesSnap, leavesSnap] = await Promise.all([
+    db.collection('timeEntries').where('uid','==',CURRENT_USER.uid).get(),
+    db.collection('leaves').where('uid','==',CURRENT_USER.uid).get()
+  ]);
+  HISTORY = entriesSnap.docs.map(doc=>{const w=doc.data();return{
+    _docId:doc.id,id:w.id||Date.now(),proj:w.proj||w.projectId,date:w.date,start:w.start,end:w.end,hrs:Number(w.hrs||0),
+    etap:w.etap,note:w.note||'',wyjazd:!!w.wyjazd,car:w.car||null,carOther:w.carOther||'',zdalna:!!w.zdalna,
+    ustalenia:w.ustalenia||'',status:w.status||'pending'
+  };}).sort((a,b)=>(b.date||'').localeCompare(a.date||'') || Number(b.id)-Number(a.id));
+  LEAVES = leavesSnap.docs.map(doc=>{const u=doc.data();return{
+    _docId:doc.id,id:u.id||Date.now(),type:u.type,label:u.label||u.type,df:u.df,dt:u.dt,dni:Number(u.dni||0),opis:u.opis||'',status:u.status||'pending'
+  };}).sort((a,b)=>(b.df||'').localeCompare(a.df||''));
   render();
 }
+
+async function startFirebaseSession_(user){
+  authWait_();
+  const profileDoc=await db.collection('users').doc(user.uid).get();
+  if(!profileDoc.exists){await auth.signOut();authMessage_('To konto nie ma profilu pracownika. Skontaktuj się z administratorem.');return;}
+  const profile=profileDoc.data();
+  if(profile.active!==true){await auth.signOut();authMessage_('Konto pracownika jest nieaktywne.');return;}
+  CURRENT_USER=user;CURRENT_PROFILE=profile;
+  CURRENT_EMP_ID=Number(profile.employeeId||0);CURRENT_EMP_KOD=profile.employeeCode||'';
+  document.querySelector('.ah-n').textContent=`${profile.firstName||''} ${profile.lastName||''}`.trim()||user.email;
+  document.querySelector('.ah-av').textContent=((profile.firstName?.[0]||'')+(profile.lastName?.[0]||'')).toUpperCase()||'PK';
+  const pills=document.querySelectorAll('.ah-pill');
+  if(pills[1])pills[1].textContent=profile.employeeCode||user.email;
+  document.querySelector('.ah-av').onclick=()=>{if(confirm('Wylogować się?'))logoutFirebase();};
+  hideAuth_();
+  await loadFromServer();
+}
+
+window.addEventListener('load',()=>{
+  auth.onAuthStateChanged(user=>{
+    if(!user){CURRENT_USER=null;CURRENT_PROFILE=null;authMessage_();return;}
+    startFirebaseSession_(user).catch(async e=>{console.error(e);await auth.signOut();authMessage_('Błąd uruchamiania aplikacji: '+(e.message||e));});
+  });
+});
 
 /* ══ DATA ══ */
 const SL_COLORS={pow_pom:'#c97c09',pow_cad:'#1a4fa0',foto:'#187a45',arch:'#5a2080',baty:'#b02020',g_mdcp:'#0e7a7a',g_bud:'#156030',g_prawna:'#8a5a2d',lk85:'#2d5a8a',adm:'#5a8a2d'};
@@ -397,7 +463,7 @@ let nextId=200;
 let TAB='wpis', overlay=null, overlayData={};
 let micOn=false, rec=null;
 let newLeave={type:null,df:'',dt:'',dni:0,opis:''};
-let viewMonth={y:2026,m:5};
+let viewMonth={y:new Date().getFullYear(),m:new Date().getMonth()+1};
 let showEmpty=true;
 let expandedDays=new Set();
 let S=fresh();
@@ -412,7 +478,7 @@ function fresh(){
 }
 
 /* ══ TIME HELPERS ══ */
-const today=new Date('2026-05-13T10:00:00');
+const today=new Date();
 function hms(){return new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
 function fhm(d){return d?d.toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}):'--:--';}
 function elStr(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sc=s%60;return h>0?h+'h '+String(m).padStart(2,'0')+'min':m+'min '+String(sc).padStart(2,'0')+'s';}
@@ -1095,6 +1161,7 @@ function saveStamp(w){
   closeOv();render();
 }
 async function submitEntry(){
+  if(!CURRENT_USER||!CURRENT_PROFILE){showToast('Zaloguj się ponownie');return;}
   let sD=S.startTime,eD=S.endTime;
   if(S.mode==='manual'){
     const rs=round15s(S.manualStart),re=round15s(S.manualEnd);
@@ -1106,18 +1173,24 @@ async function submitEntry(){
   const ov=document.createElement('div');ov.className='spin-ov';
   ov.innerHTML='<div class="spin-card"><div class="spinner"></div><div style="font-size:12px;font-weight:600;color:var(--ink)">Zapisuję...</div></div>';
   document.getElementById('phone').appendChild(ov);
-  await new Promise(r=>setTimeout(r,900));ov.remove();
-  const entry={id:nextId++,proj:S.proj,date:today.toISOString().split('T')[0],start:startStr,end:endStr,hrs,etap:S.etap,note:S.note,wyjazd:S.wyjazd,car:S.car,carOther:S.carOther,zdalna:S.zdalna,ustalenia:S.ustalenia,status:'pending'};
-  HISTORY.unshift(entry);SESSION.push({...entry});
-  // Zapisz na serwerze
-  if(USE_API){
-    apiPost('saveWpis', {empId:CURRENT_EMP_ID, empKod:CURRENT_EMP_KOD, proj:entry.proj, date:entry.date,
-      start:entry.start, end:entry.end, hrs:entry.hrs, etap:entry.etap, note:entry.note,
-      wyjazd:entry.wyjazd, car:entry.car, carOther:entry.carOther, zdalna:entry.zdalna,
-      ustalenia:entry.ustalenia, status:'pending'}).then(r=>{ if(r&&r.id)entry.id=r.id; });
-  }
-  if(!RECENT_PROJS.includes(S.proj)){RECENT_PROJS.unshift(S.proj);if(RECENT_PROJS.length>3)RECENT_PROJS.pop();}
-  S.phase='confirmed';render();document.getElementById('content').scrollTo(0,0);
+  const numericId=Date.now();
+  const payload={
+    id:numericId,uid:CURRENT_USER.uid,employeeId:CURRENT_EMP_ID,employeeCode:CURRENT_EMP_KOD,
+    employeeName:`${CURRENT_PROFILE.firstName||''} ${CURRENT_PROFILE.lastName||''}`.trim(),
+    proj:S.proj,projectId:S.proj,date:new Date().toISOString().slice(0,10),start:startStr,end:endStr,hrs,
+    etap:S.etap,note:S.note||'',wyjazd:!!S.wyjazd,car:S.car||null,carOther:S.carOther||'',
+    auto:S.car==='c12',zdalna:!!S.zdalna,ustalenia:S.ustalenia||'',status:'pending',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  try{
+    const ref=await db.collection('timeEntries').add(payload);
+    const entry={_docId:ref.id,id:numericId,proj:payload.proj,date:payload.date,start:startStr,end:endStr,hrs,
+      etap:S.etap,note:S.note,wyjazd:S.wyjazd,car:S.car,carOther:S.carOther,zdalna:S.zdalna,ustalenia:S.ustalenia,status:'pending'};
+    HISTORY.unshift(entry);SESSION.push({...entry});
+    if(!RECENT_PROJS.includes(S.proj)){RECENT_PROJS.unshift(S.proj);if(RECENT_PROJS.length>3)RECENT_PROJS.pop();}
+    S.phase='confirmed';render();document.getElementById('content').scrollTo(0,0);
+  }catch(e){console.error(e);showToast('Nie zapisano: '+(e.message||'błąd Firestore'));}
+  finally{ov.remove();}
 }
 function nextProject(){
   const prevEnd=SESSION[SESSION.length-1]?.end;
@@ -1139,18 +1212,22 @@ function startMic(){const SR=window.SpeechRecognition||window.webkitSpeechRecogn
 function stopMic(){micOn=false;try{rec?.stop();}catch(e){}render();}
 
 function calcLD(){if(newLeave.df&&newLeave.dt){const d=(new Date(newLeave.dt)-new Date(newLeave.df))/86400000;newLeave.dni=d>=0?Math.round(d)+1:0;}render();}
-function submitLeave(){
+async function submitLeave(){
+  if(!CURRENT_USER||!CURRENT_PROFILE){showToast('Zaloguj się ponownie');return;}
   if(!newLeave.type){showToast('Wybierz typ nieobecności');return;}
   if(!newLeave.df||!newLeave.dt){showToast('Podaj daty');return;}
   if(newLeave.type==='inne'&&!newLeave.opis.trim()){showToast('Opisz powód nieobecności');return;}
-  const leaveEntry={id:nextId++,type:newLeave.type,label:newLeave.type,df:newLeave.df,dt:newLeave.dt,dni:newLeave.dni,opis:newLeave.opis,status:'pending'};
-  LEAVES.unshift(leaveEntry);
-  if(USE_API){
-    apiPost('saveUrlop', {empId:CURRENT_EMP_ID, empKod:CURRENT_EMP_KOD, type:leaveEntry.type,
-      df:leaveEntry.df, dt:leaveEntry.dt, dni:leaveEntry.dni, opis:leaveEntry.opis, status:'pending'});
-  }
-  newLeave={type:null,df:'',dt:'',dni:0,opis:''};
-  showToast('Wniosek złożony — czeka na kierownika');render();
+  const numericId=Date.now();
+  const payload={id:numericId,uid:CURRENT_USER.uid,employeeId:CURRENT_EMP_ID,employeeCode:CURRENT_EMP_KOD,
+    employeeName:`${CURRENT_PROFILE.firstName||''} ${CURRENT_PROFILE.lastName||''}`.trim(),
+    type:newLeave.type,label:newLeave.type,df:newLeave.df,dt:newLeave.dt,dni:newLeave.dni,opis:newLeave.opis||'',status:'pending',
+    createdAt:firebase.firestore.FieldValue.serverTimestamp(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};
+  try{
+    const ref=await db.collection('leaves').add(payload);
+    LEAVES.unshift({_docId:ref.id,...payload});
+    newLeave={type:null,df:'',dt:'',dni:0,opis:''};
+    showToast('Wniosek złożony — czeka na kierownika');render();
+  }catch(e){console.error(e);showToast('Nie zapisano wniosku: '+(e.message||'błąd Firestore'));}
 }
 
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}
@@ -1158,7 +1235,7 @@ document.getElementById('ah-g').textContent=greeting();
 setInterval(()=>document.getElementById('sbar-t').textContent=new Date().toLocaleTimeString('pl-PL',{hour:'2-digit',minute:'2-digit'}),30000);
 setInterval(()=>{if(S.phase==='idle'||S.phase==='working'){const c=document.getElementById('lc');if(c)c.textContent=hms();}},1000);
 render();
-if(USE_API) loadFromServer();
+
 </script>
 </body>
 </html>
