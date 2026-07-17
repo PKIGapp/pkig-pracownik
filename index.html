@@ -267,10 +267,10 @@ body{font-family:'DM Sans',system-ui,sans-serif;color:var(--ink);font-size:14px;
   <div class="sbar"><div class="sbar-t" id="sbar-t">9:41</div><div style="font-size:10px;color:rgba(255,255,255,.55)">5G ▌▌▌ 🔋</div></div>
   <div class="app-hdr">
     <div class="ah-top">
-      <div><div class="ah-g" id="ah-g">Dzień dobry,</div><div class="ah-n">Marta Kowalska</div></div>
-      <div class="ah-av">MK</div>
+      <div><div class="ah-g" id="ah-g">Dzień dobry,</div><div class="ah-n">Sebastian Przybyła</div></div>
+      <div class="ah-av">SP</div>
     </div>
-    <div class="ah-pills"><div class="ah-pill ok">● maj 2026</div><div class="ah-pill">#1071</div></div>
+    <div class="ah-pills"><div class="ah-pill ok">● maj 2026</div><div class="ah-pill">#1064</div></div>
   </div>
   <div class="scroll" id="content"></div>
   <div class="bnav">
@@ -312,7 +312,8 @@ async function apiPost(action, data){
 }
 
 /* Identyfikacja zalogowanego pracownika (docelowo z OAuth) */
-let CURRENT_EMP_ID = 1071; // Marta Kowalska — placeholder do czasu OAuth
+let CURRENT_EMP_ID = 64; // Sebastian Przybyła — użytkownik testowy
+const CURRENT_EMP_KOD = '#1064';
 
 /* Załaduj dane pracownika z serwera przy starcie */
 async function loadFromServer(){
@@ -1014,11 +1015,11 @@ function rProfil(){
   return`<div class="fade-in">
     <div style="background:var(--ink);border-radius:var(--rl);padding:14px;margin-bottom:10px;display:flex;align-items:center;gap:11px;position:relative;overflow:hidden">
       <div style="position:absolute;top:-30px;right:-20px;width:120px;height:120px;border-radius:50%;background:radial-gradient(circle,rgba(201,124,9,.22) 0%,transparent 70%);pointer-events:none"></div>
-      <div style="width:44px;height:44px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2)">MK</div>
-      <div><div style="font-size:15px;font-weight:700;color:#fff">Marta Kowalska</div>
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;border:2px solid rgba(255,255,255,.2)">SP</div>
+      <div><div style="font-size:15px;font-weight:700;color:#fff">Sebastian Przybyła</div>
         <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px">Geodezja miejska · PKIG · etat</div>
         <div style="display:flex;gap:5px;margin-top:4px">
-          <span style="font-family:'DM Mono',monospace;font-size:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 6px;color:rgba(255,255,255,.5)">#1071</span>
+          <span style="font-family:'DM Mono',monospace;font-size:9px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:4px;padding:2px 6px;color:rgba(255,255,255,.5)">#1064</span>
           <span style="font-size:10px;color:rgba(255,255,255,.35)">34.52 zł/h</span>
         </div>
       </div>
@@ -1110,7 +1111,7 @@ async function submitEntry(){
   HISTORY.unshift(entry);SESSION.push({...entry});
   // Zapisz na serwerze
   if(USE_API){
-    apiPost('saveWpis', {empId:CURRENT_EMP_ID, empKod:'#'+CURRENT_EMP_ID, proj:entry.proj, date:entry.date,
+    apiPost('saveWpis', {empId:CURRENT_EMP_ID, empKod:CURRENT_EMP_KOD, proj:entry.proj, date:entry.date,
       start:entry.start, end:entry.end, hrs:entry.hrs, etap:entry.etap, note:entry.note,
       wyjazd:entry.wyjazd, car:entry.car, carOther:entry.carOther, zdalna:entry.zdalna,
       ustalenia:entry.ustalenia, status:'pending'}).then(r=>{ if(r&&r.id)entry.id=r.id; });
@@ -1145,7 +1146,7 @@ function submitLeave(){
   const leaveEntry={id:nextId++,type:newLeave.type,label:newLeave.type,df:newLeave.df,dt:newLeave.dt,dni:newLeave.dni,opis:newLeave.opis,status:'pending'};
   LEAVES.unshift(leaveEntry);
   if(USE_API){
-    apiPost('saveUrlop', {empId:CURRENT_EMP_ID, empKod:'#'+CURRENT_EMP_ID, type:leaveEntry.type,
+    apiPost('saveUrlop', {empId:CURRENT_EMP_ID, empKod:CURRENT_EMP_KOD, type:leaveEntry.type,
       df:leaveEntry.df, dt:leaveEntry.dt, dni:leaveEntry.dni, opis:leaveEntry.opis, status:'pending'});
   }
   newLeave={type:null,df:'',dt:'',dni:0,opis:''};
