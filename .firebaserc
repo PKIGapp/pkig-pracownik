@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "pkig-czas-pracy-app"
+  },
+  "targets": {
+    "pkig-czas-pracy-app": {
+      "hosting": {
+        "pracownik": [
+          "pkig-czas-pracy-app"
+        ]
+      }
+    }
+  }
+}
